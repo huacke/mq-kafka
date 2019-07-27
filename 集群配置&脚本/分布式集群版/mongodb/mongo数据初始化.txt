@@ -1,0 +1,318 @@
+mongo --port 22001
+
+use admin
+
+config={
+    _id: "shard1",
+    members: [
+      { _id : 1, host : "192.168.0.109:22001"},
+      { _id : 2, host : "192.168.0.111:22001"},
+	  { _id : 3, host : "192.168.0.117:22001"}
+    ]
+}
+
+
+rs.initiate(config)
+
+rs.status()
+
+db.createUser({user:"root",pwd:"root",roles:[{role:"root", db:"admin"}]})
+
+db.auth("root","root")
+
+db.createUser({user: "system",pwd: "root",roles: [ { role: "__system", db: "admin" } ]})
+
+use mq
+
+db.createUser({user:"root",pwd:"root",roles:[{role:"dbOwner",db:"mq"}]})
+
+db.createUser({user:"develop",pwd:"develop",roles:[{role:"readWrite",db:"mq"}]})
+
+db.createUser({user:"read",pwd:"read",roles:[{role:"read",db:"mq"}]})
+
+
+
+
+
+mongo --port 22002
+
+use admin
+
+
+config={
+    _id: "shard2",
+    members: [
+      { _id : 1, host : "192.168.0.109:22002"},
+      { _id : 2, host : "192.168.0.111:22002"},
+	  { _id : 3, host : "192.168.0.117:22002"}
+    ]
+}
+rs.initiate(config)
+rs.status()
+
+
+db.createUser({user:"root",pwd:"root",roles:[{role:"root", db:"admin"}]})
+
+db.auth("root","root")
+
+db.createUser({user: "system",pwd: "root",roles: [ { role: "__system", db: "admin" } ]})
+
+
+use mq
+
+db.createUser({user:"root",pwd:"root",roles:[{role:"dbOwner",db:"mq"}]})
+
+db.createUser({user:"develop",pwd:"develop",roles:[{role:"readWrite",db:"mq"}]})
+
+db.createUser({user:"read",pwd:"read",roles:[{role:"read",db:"mq"}]})
+
+
+
+
+
+
+mongo --port 22003
+
+use admin
+
+config={
+    _id: "shard3",
+    members: [
+      { _id : 1, host : "192.168.0.109:22003"},
+      { _id : 2, host : "192.168.0.111:22003"},
+	  { _id : 3, host : "192.168.0.117:22003"}
+    ]
+}
+rs.initiate(config)
+rs.status()
+
+db.createUser({user:"root",pwd:"root",roles:[{role:"root", db:"admin"}]})
+
+db.auth("root","root")
+
+db.createUser({user: "system",pwd: "root",roles: [ { role: "__system", db: "admin" } ]})
+
+
+use mq
+
+db.createUser({user:"root",pwd:"root",roles:[{role:"dbOwner",db:"mq"}]})
+
+db.createUser({user:"develop",pwd:"develop",roles:[{role:"readWrite",db:"mq"}]})
+
+db.createUser({user:"read",pwd:"read",roles:[{role:"read",db:"mq"}]})
+
+
+
+mongo --port 24001
+
+use admin
+
+config={
+    _id: "shardmms",
+    members: [
+      { _id : 1, host : "192.168.0.109:24001"},
+      { _id : 2, host : "192.168.0.111:24001"},
+	  { _id : 3, host : "192.168.0.117:24001"}
+    ]
+}
+
+rs.initiate(config)
+
+
+rs.status()
+
+
+db.createUser({user:"root",pwd:"root",roles:[{role:"root", db:"admin"}]})
+
+db.auth("root","root")
+
+db.createUser({user: "system",pwd: "root",roles: [ { role: "__system", db: "admin" } ]})
+
+
+
+
+mongo --port 25001
+
+use admin
+
+config={
+    _id: "shardmms-backup",
+    members: [
+      { _id : 1, host : "192.168.0.109:25001"},
+      { _id : 2, host : "192.168.0.111:25001"},
+	  { _id : 3, host : "192.168.0.117:25001"}
+    ]
+}
+
+rs.initiate(config)
+
+
+rs.status()
+
+
+db.createUser({user:"root",pwd:"root",roles:[{role:"root", db:"admin"}]})
+
+db.auth("root","root")
+
+db.createUser({user: "system",pwd: "root",roles: [ { role: "__system", db: "admin" } ]})
+
+
+
+mongo --port 21001
+
+use admin
+
+config={
+    _id: "configs",
+    members: [
+      { _id : 1, host : "192.168.0.109:21001"},
+      { _id : 2, host : "192.168.0.111:21001"},
+      { _id : 3, host : "192.168.0.117:21001"}
+    ]
+}
+rs.initiate(config)
+
+db.createUser({user:"root",pwd:"root",roles:[{role:"root", db:"admin"}]})
+
+db.auth("root","root")
+
+db.createUser({user: "system",pwd: "root",roles: [ { role: "__system", db: "admin" } ]})
+
+
+use config
+
+db.createUser({user:"root",pwd:"root",roles:[{role:"dbOwner", db:"config"}]})
+
+
+
+
+
+
+mongo --port 23001
+
+use admin
+
+db.auth("root","root")
+
+sh.addShard("shard1/192.168.0.109:22001,192.168.0.111:22001,192.168.0.117:22001")
+
+sh.addShard("shard2/192.168.0.109:22002,192.168.0.111:22002,192.168.0.117:22002")
+
+sh.addShard("shard3/192.168.0.109:22003,192.168.0.111:22003,192.168.0.117:22003")
+
+
+
+//查看分片状态
+db.printShardingStatus()
+
+//查看集群状态
+rs.status()
+
+db.isMaster( )
+
+//创建数据库角色
+db.createRole({role:"superman", privileges:[{resource:{anyResource: true}, actions:["anyAction"]}], roles:["root"]})
+
+
+//数据库进行分片
+sh.enableSharding("mq")
+
+//创建测试库
+use test
+db.createUser({user:"test",pwd:"test",roles:[{role:"dbOwner", db:"test"}]})
+db.auth("test","test")
+for(i=1;i<=1000;i++){db.testdata.insert({id:i+3,name:i+3+""})}
+
+//创建mq库
+use  mq
+
+db.createUser({user:"root",pwd:"root",roles:[{role:"dbOwner",db:"mq"}]})
+
+db.auth("root","root")
+
+db.createUser({user:"develop",pwd:"develop",roles:[{role:"readWrite",db:"mq"}]})
+
+
+db.createUser({user:"read",pwd:"read",roles:[{role:"read",db:"mq"}]})
+
+
+
+db.runCommand({"shardcollection":"mq.kafka_deaded_msg_log","key":{"_id":"hashed"}})
+db.runCommand({"shardcollection":"mq.kafka_msg_log","key":{"_id":"hashed"}})
+db.runCommand({"shardcollection":"mq.kafka_process_msg_log","key":{"_id":"hashed"}})
+db.runCommand({"shardcollection":"mq.kafka_request_log","key":{"_id":"hashed"}})
+db.runCommand({"shardcollection":"mq.kafka_consumer_msg_log","key":{"_id":"hashed"}})
+db.runCommand({"shardcollection":"mq.kafka_consumer_offset_log","key":{"_id":"hashed"}})
+db.runCommand({"shardcollection":"mq.kafka_consumer_work_log","key":{"_id":"hashed"}})
+
+
+
+//创建索引
+db.kafka_deaded_msg_log.ensureIndex({msgId:-1},{"background":true})
+
+db.kafka_deaded_msg_log.ensureIndex({topic:-1},{"background":true})
+
+db.kafka_deaded_msg_log.ensureIndex({msgKey:-1},{"background":true})
+
+db.kafka_deaded_msg_log.ensureIndex({msgType:1},{"background":true})
+
+db.kafka_deaded_msg_log.ensureIndex({createtime:-1},{"background":true})
+
+db.kafka_deaded_msg_log.ensureIndex({updateTime:-1},{"background":true})
+
+
+db.kafka_msg_log.ensureIndex({msgId:-1},{"background":true})
+
+db.kafka_msg_log.ensureIndex({topic:-1},{"background":true})
+
+db.kafka_msg_log.ensureIndex({msgKey:-1},{"background":true})
+
+db.kafka_msg_log.ensureIndex({msgType:1},{"background":true})
+
+db.kafka_msg_log.ensureIndex({createtime:-1},{"background":true})
+
+db.kafka_msg_log.ensureIndex({updateTime:-1},{"background":true})
+
+
+db.kafka_request_log.ensureIndex({digest:-1},{"background":true})
+
+db.kafka_request_log.ensureIndex({msgId:-1},{"background":true})
+
+db.kafka_request_log.ensureIndex({topic:-1},{"background":true})
+
+db.kafka_request_log.ensureIndex({msgKey:-1},{"background":true})
+
+db.kafka_request_log.ensureIndex({msgType:1},{"background":true})
+
+db.kafka_request_log.ensureIndex({createtime:-1},{"background":true})
+
+db.kafka_request_log.ensureIndex({costTime:-1},{"background":true})
+
+
+
+db.kafka_consumer_msg_log.ensureIndex({digest:-1},{"background":true})
+
+db.kafka_consumer_msg_log.ensureIndex({topic:-1},{"background":true})
+
+db.kafka_consumer_msg_log.ensureIndex({digest:-1},{"background":true})
+
+db.kafka_consumer_msg_log.ensureIndex({msgKey:-1},{"background":true})
+
+db.kafka_consumer_msg_log.ensureIndex({msgType:1},{"background":true})
+
+db.kafka_consumer_msg_log.ensureIndex({createtime:-1},{"background":true})
+
+
+db.kafka_consumer_work_log.ensureIndex({digest:-1},{"background":true})
+
+db.kafka_consumer_work_log.ensureIndex({msgId:-1},{"background":true})
+
+db.kafka_consumer_work_log.ensureIndex({topic:-1},{"background":true})
+
+db.kafka_consumer_work_log.ensureIndex({msgKey:-1},{"background":true})
+
+db.kafka_consumer_work_log.ensureIndex({msgType:1},{"background":true})
+
+db.kafka_consumer_work_log.ensureIndex({createtime:-1},{"background":true})
+
+db.kafka_consumer_work_log.ensureIndex({costTime:-1},{"background":true})

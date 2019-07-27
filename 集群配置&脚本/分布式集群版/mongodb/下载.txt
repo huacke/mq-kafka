@@ -1,0 +1,1 @@
+mongodb https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-rhel70-4.0.10.tgz

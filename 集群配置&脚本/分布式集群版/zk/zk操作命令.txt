@@ -1,0 +1,19 @@
+firewall-cmd --list-port
+firewall-cmd --query-port=2181/tcp
+firewall-cmd --permanent --zone=public --add-port=2181/tcp
+firewall-cmd --permanent --zone=public --add-port=2888/tcp
+firewall-cmd --permanent --zone=public --add-port=3888/tcp
+firewall-cmd --reload
+
+mkdir -p /data/zookeeper/data
+mkdir -p /data/zookeeper/logs
+
+vim /etc/profile
+export ZOOKEEPER_HOME=/usr/local/zookeeper/apache-zookeeper-3.5.5/
+export PATH=$ZOOKEEPER_HOME/bin:$PATH
+export ZOO_LOG_DIR=/data/zookeeper/logs
+
+
+touch  /data/zookeeper/myid  && echo 0 > /data/zookeeper/myid
+touch  /data/zookeeper/myid  && echo 1 > /data/zookeeper/myid
+touch  /data/zookeeper/myid  && echo 2 > /data/zookeeper/myid

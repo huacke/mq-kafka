@@ -1,0 +1,338 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.mq</groupId>
+	<artifactId>mq</artifactId>
+	<version>1.0.0.0</version>
+	<packaging>pom</packaging>
+
+	<name>${project.artifactId}</name>
+	<description>mq基础依赖</description>
+
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>2.1.5.RELEASE</version>
+	</parent>
+
+	<modules>
+		<module>mq-framework</module>
+		<module>mq-common</module>
+		<module>mq-service-api</module>
+		<module>mq-consumer</module>
+		<module>eureka-server</module>
+		<module>mq-service</module>
+		<module>mq-worker</module>
+        <module>mq-service-test</module>
+	</modules>
+
+	<properties>
+		<!--maven插件配置参数-->
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<maven.test.skip>true</maven.test.skip>
+		<maven.compiler.encoding>UTF-8</maven.compiler.encoding>
+		<maven.compiler.plugin.version>3.1</maven.compiler.plugin.version>
+		<maven.deploy.plugin-version>2.8.2</maven.deploy.plugin-version>
+		<java.version>1.8</java.version>
+
+		<spring-boot.version>2.1.5.RELEASE</spring-boot.version>
+		<spring-cloud.version>Greenwich.SR1</spring-cloud.version>
+
+		<!--redis 相关-->
+		<jedis.version>2.9.0</jedis.version>
+		<spring-data-redis.version>2.1.8.RELEASE</spring-data-redis.version>
+		<!-- 搜索相关插件 -->
+		<!-- json -->
+		<fastjson.version>1.2.58</fastjson.version>
+		<gson.version>2.8.0 </gson.version>
+		<guava.version>23.0</guava.version>
+		<!--jackson-->
+		<org.codehaus.jackson.version>1.9.13</org.codehaus.jackson.version>
+		<!--apache工具包-->
+		<commons-lang.version>2.6</commons-lang.version>
+		<commons-io.version>2.5</commons-io.version>
+		<commons-codec.version>1.10</commons-codec.version>
+		<commons-configuration.version>1.10</commons-configuration.version>
+		<commons-collections4.version>4.2</commons-collections4.version>
+		<commons-lang3.version>3.8.1</commons-lang3.version>
+		<!--日志组件-->
+		<slf4j-api.version>1.7.21</slf4j-api.version>
+		<logback-classic.version>1.1.7</logback-classic.version>
+		<!-- 注解工具 -->
+		<lombok.version>1.16.14</lombok.version>
+		<!--其他-->
+		<hutool.version>4.4.5</hutool.version>
+		<junit.version>4.12</junit.version>
+		<!-- swagger -->
+		<swagger.version>2.7.0</swagger.version>
+
+		<transmittable-thread-local.version>2.4.0</transmittable-thread-local.version>
+
+		<kafka.version>2.3.0</kafka.version>
+
+		<kafka-clients.version>2.3.0</kafka-clients.version>
+
+		<mq-framework-version>1.0.0.0</mq-framework-version>
+		<mq-consumer-version>1.0.0.0</mq-consumer-version>
+		<mq-service-api-version>1.0.0.0</mq-service-api-version>
+		<mq-common-version>1.0.0.0</mq-common-version>
+	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.mq</groupId>
+				<artifactId>mq-framework</artifactId>
+				<version>${mq-framework-version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.mq</groupId>
+				<artifactId>mq-consumer</artifactId>
+				<version>${mq-consumer-version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.mq</groupId>
+				<artifactId>mq-service-api</artifactId>
+				<version>${mq-service-api-version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.mq</groupId>
+				<artifactId>mq-common</artifactId>
+				<version>${mq-common-version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-dependencies</artifactId>
+				<version>${spring-boot.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-dependencies</artifactId>
+				<version>${spring-cloud.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+
+
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-lang3</artifactId>
+				<version>${commons-lang3.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>commons-io</groupId>
+				<artifactId>commons-io</artifactId>
+				<version>${commons-io.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.springframework.data</groupId>
+				<artifactId>spring-data-redis</artifactId>
+				<version>${spring-data-redis.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.apache.kafka</groupId>
+				<artifactId>kafka-clients</artifactId>
+				<version>${kafka-clients.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-commons</artifactId>
+			</dependency>
+
+		</dependencies>
+	</dependencyManagement>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context-support</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-aop</artifactId>
+		</dependency>
+		<!-- redis -->
+
+		<dependency>
+			<groupId>redis.clients</groupId>
+			<artifactId>jedis</artifactId>
+			<version>${jedis.version}</version>
+		</dependency>
+		<!--google工具包-->
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>${guava.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.google.code.findbugs</groupId>
+					<artifactId>jsr305</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<!--工具包-->
+		<dependency>
+			<groupId>cn.hutool</groupId>
+			<artifactId>hutool-all</artifactId>
+			<version>${hutool.version}</version>
+		</dependency>
+		
+		<!--json-->
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>fastjson</artifactId>
+			<version>${fastjson.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>${gson.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>commons-codec</groupId>
+			<artifactId>commons-codec</artifactId>
+			<version>${commons-codec.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.kafka</groupId>
+			<artifactId>kafka-clients</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+			<version>${commons-lang.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>${commons-io.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-swagger2</artifactId>
+			<version>${swagger.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.google.guava</groupId>
+					<artifactId>guava</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.retry</groupId>
+			<artifactId>spring-retry</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>transmittable-thread-local</artifactId>
+			<version>${transmittable-thread-local.version}</version>
+		</dependency>
+
+	</dependencies>
+
+	<distributionManagement>
+		<repository>
+			<id>releases</id>
+			<url>http://192.168.0.109:8081/nexus/content/repositories/releases</url>
+		</repository>
+		<snapshotRepository>
+			<id>snapshots</id>
+			<url>http://192.168.0.109:8081/nexus/content/repositories/snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
+
+
+	<repositories>
+		<repository>
+			<id>spring-milestones</id>
+			<name>Spring Milestones</name>
+			<url>https://repo.spring.io/milestone</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-maven-plugin</artifactId>
+					<version>${spring-boot.version}</version>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${maven.compiler.plugin.version}</version>
+				<configuration>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
+					<encoding>${maven.compiler.encoding}</encoding>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<configuration>
+					<delimiters>
+						<delimiter>@</delimiter>
+					</delimiters>
+					<useDefaultDelimiters>false</useDefaultDelimiters>
+					<nonFilteredFileExtensions>
+						<nonFilteredFileExtension>ico</nonFilteredFileExtension>
+						<nonFilteredFileExtension>woff</nonFilteredFileExtension>
+						<nonFilteredFileExtension>woff2</nonFilteredFileExtension>
+						<nonFilteredFileExtension>eot</nonFilteredFileExtension>
+						<nonFilteredFileExtension>ttf</nonFilteredFileExtension>
+						<nonFilteredFileExtension>svg</nonFilteredFileExtension>
+						<nonFilteredFileExtension>ttc</nonFilteredFileExtension>
+					</nonFilteredFileExtensions>
+				</configuration>
+			</plugin>
+		</plugins>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+			</resource>
+			<resource>
+				<directory>src/main/java</directory>
+				<includes>
+					<include>**/*.xml</include>
+				</includes>
+			</resource>
+		</resources>
+	</build>
+
+
+</project>

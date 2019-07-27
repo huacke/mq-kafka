@@ -1,0 +1,35 @@
+version: '3.2'
+services:
+  mongodb:
+    image: middleware/mongodb-dev
+    container_name: mongodb-cluster-dev
+    privileged: true
+    build: .
+    ports:
+      - '23001:23001'
+      - '23002:23002'
+      - '23003:23003'
+      - '22001:22001'
+      - '22002:22002'
+      - '22003:22003'
+      - '22004:22004'
+      - '22005:22005'
+      - '22006:22006'
+      - '22007:22007'
+      - '22008:22008'
+      - '22009:22009'
+      - '21001:21001'
+      - '21002:21002'
+      - '21003:21003'
+    volumes: 
+       - dev-mongo-data:/data/mongodb
+    networks:
+     - dev-mongodb-net
+networks:
+  dev-mongodb-net:
+    driver: bridge
+volumes:
+  dev-mongo-data: 
+    driver: local-persist #docker本地数据持久化插件
+    driver_opts: 
+      mountpoint: /data/dockerData/mongodb/dev/

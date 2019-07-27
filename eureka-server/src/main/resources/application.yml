@@ -1,0 +1,48 @@
+# Tomcat
+server:
+  tomcat:
+    uri-encoding: UTF-8
+    max-threads: 1000
+    min-spare-threads: 30
+  port: 8761
+  connection-timeout: 5000ms
+
+spring:
+  # 环境 dev|test|prd|local
+  profiles:
+    active: dev
+  application:
+    name: walton-eureka-server
+  servlet:
+      context-path: /eureka/
+  # jackson时间格式化
+  jackson:
+    time-zone: GMT+8
+    date-format: yyyy-MM-dd HH:mm:ss
+    default-property-inclusion: ALWAYS
+
+logging:
+  path: logs/
+  level:
+    org.springframework.boot.autoconfigure: ERROR
+
+
+eureka:
+  server:
+      ## 自我保护模式
+      enable-self-preservation: false
+      ## 主动失效检测间隔
+      eviction-interval-timer-in-ms: 5000
+      ## 禁用readOnlyCacheMap
+      use-read-only-response-cache: false
+  instance:
+    prefer-ip-address: true
+    instance-id:  ${spring.cloud.client.ip-address}:${spring.application.name}:${server.port}:@project.version@
+    hostname: ${spring.cloud.client.ip-address}
+    ## 心跳间隔
+    lease-renewal-interval-in-seconds: 2
+    ##没有心跳的淘汰时间
+    lease-expiration-duration-in-seconds: 5
+  client:
+    registerWithEureka: true
+    fetchRegistry: true

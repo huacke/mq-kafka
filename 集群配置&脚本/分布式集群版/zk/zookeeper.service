@@ -1,0 +1,13 @@
+[Unit]
+Description=zookeeper服务 
+After=network.target
+After=syslog.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/zookeeper/startZK.sh start
+Restart=always
+SuccessExitStatus=143
+
+[Install]
+WantedBy=multi-user.target

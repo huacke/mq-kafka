@@ -1,0 +1,11 @@
+[Unit]
+Description=mongodb服务 
+After=network.target
+After=syslog.target
+
+[Service]
+Type=forking
+ExecStart=/usr/local/mongodb/startmongodb.sh start
+     
+[Install]
+WantedBy=multi-user.target

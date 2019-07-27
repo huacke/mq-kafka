@@ -1,0 +1,110 @@
+# Tomcat
+server:
+  tomcat:
+    uri-encoding: UTF-8
+    max-threads: 1000
+    min-spare-threads: 30
+  port: 8791
+  connection-timeout: 5000ms
+  servlet:
+    context-path: /mq-service-test
+
+spring:
+  # 环境 dev|test|prd|local
+  profiles:
+    active: dev
+    include: mqClient
+  application:
+    name: mq-service-test
+  # jackson时间格式化
+  jackson:
+    time-zone: GMT+8
+    date-format: yyyy-MM-dd HH:mm:ss
+    default-property-inclusion: ALWAYS
+  http:
+    multipart:
+      servlet:
+        max-file-size: 1000MB
+        max-request-size: 1000MB
+        enabled: true
+  mvc:
+    throw-exception-if-no-handler-found: true
+    async:
+      request-timeout: 5000ms
+
+logging:
+  path: logs/
+
+ribbon:
+  server-list-refresh-interval: 2000
+  NFLoadBalancerPingInterval : 2
+  eager-load:
+    enabled: true
+  eureka:
+    enabled: true
+  ReadTimeout: 10000
+  ConnectTimeout: 5000
+  MaxAutoRetries: 0
+  MaxAutoRetriesNextServer: 0
+  OkToRetryOnAllOperations: false
+
+
+hystrix:
+      threadpool:
+           default:
+              coreSize: 200
+              maxQueueSize: 200
+              queueSizeRejectionThreshold: 150
+      command:
+          default:
+              execution:
+                timeout:
+                  enabled: true
+                isolation:
+                      thread:
+                          timeoutInMilliseconds: 20000
+feign:
+    hystrix:
+      enabled: true
+    client:
+      config:
+        default:
+          connect-timeout : 5000
+          read-timeout : 10000
+
+management:
+  health:
+      redis:
+        enabled: false
+
+
+eureka:
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.cloud.client.ip-address}:${spring.application.name}:${server.port}:@project.version@
+    hostname: ${spring.cloud.client.ip-address}
+      ## 心跳间隔
+    lease-renewal-interval-in-seconds: 2
+      ##没有心跳的淘汰时间
+    lease-expiration-duration-in-seconds: 5
+    metadata-map:
+        management:
+          context-path: /${server.servlet.context-path}
+          endpoints:
+            web:
+              exposure:
+                include: '*'
+          endpoint:
+              health:
+                show-details: ALWAYS
+        info:
+           version: 1.0.0
+        health-check-url: http://localhost:${server.port}/${server.servlet.context-path}/actuator/health
+        status-page-url: http://localhost:${server.port}/${server.servlet.context-path}/actuator/info
+        home-page-url: http://localhost:${server.port}/${server.servlet.context-path}/
+  client:
+    registry-fetch-interval-seconds: 2
+    healthcheck:
+      enabled: true
+
+

@@ -1,0 +1,19 @@
+feign:
+  client:
+    config:
+      walton-mq-service:
+        connect-timeout : 5000
+        read-timeout : 10000
+walton-mq-service:
+  ribbon:
+    NFLoadBalancerRuleClassName: com.mq.conf.MQMsgKeyHashRobinRule
+    server-list-refresh-interval: 2000
+    eager-load:
+      enabled: true
+    eureka:
+      enabled: true
+    ReadTimeout: 10000
+    ConnectTimeout: 5000
+    MaxAutoRetries: 0
+    MaxAutoRetriesNextServer: 0
+    OkToRetryOnAllOperations: false

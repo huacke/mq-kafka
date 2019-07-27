@@ -1,0 +1,26 @@
+version: '3.2'
+
+services:
+  zookeeper:
+    image: middleware/zookeeper-dev
+    container_name: zookeeper-cluster-dev
+    restart: always
+    privileged: true
+    build: .
+    ports:
+      - '2181:2181'
+      - '2182:2182'
+      - '2183:2183'
+    volumes:
+      - dev-zk-data:/data/zk
+    networks:
+     - dev-zk-net
+networks:
+  dev-zk-net:
+    driver: bridge
+volumes:
+  dev-zk-data: 
+    driver: local-persist #docker本地数据持久化插件
+    driver_opts: 
+      mountpoint: /data/dockerData/zookeeper/dev/
+

@@ -1,0 +1,11 @@
+[Unit]
+Description=mongodb-mms服务 
+After=network.target
+After=syslog.target
+
+[Service]
+Type=forking
+ExecStart=/opt/mongodb/mms/bin/mongodb-mms  start
+
+[Install]
+WantedBy=multi-user.target

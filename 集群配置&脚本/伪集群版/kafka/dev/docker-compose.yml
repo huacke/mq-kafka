@@ -1,0 +1,27 @@
+version: '3.2'
+
+services:
+  kafka:
+    image: middleware/kafka-dev
+    container_name: kafka-cluster-dev
+    privileged: true
+    restart: always
+    build: .
+    ports:
+      - '19093:19093'
+      - '19094:19094'
+      - '19095:19095'
+    volumes:
+      - dev-kafka-data:/data/kafka
+    networks:
+     - dev-kafka-net
+networks:
+  dev-kafka-net:
+    driver: bridge
+volumes:
+  dev-kafka-data: 
+    driver: local-persist #docker本地数据持久化插件
+    driver_opts: 
+      mountpoint: /data/dockerData/kafka/dev/
+
+    

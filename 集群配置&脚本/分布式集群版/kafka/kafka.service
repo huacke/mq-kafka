@@ -1,0 +1,17 @@
+[Unit]
+Description=kafka服务 
+After=network.target
+After=syslog.target
+
+[Service]
+Type=forking
+ExecStart=/usr/local/kafka/startkafka.sh start
+ExecStopPost=/usr/local/kafka/startkafka.sh stop
+Restart=always
+SuccessExitStatus= 0 143 137 SIGTERM SIGKILL
+LimitCORE=infinity
+LimitNOFILE=100000
+LimitNPROC=100000
+     
+[Install]
+WantedBy=multi-user.target

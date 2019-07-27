@@ -1,0 +1,83 @@
+﻿firewall-cmd --list-port
+firewall-cmd --query-port=23001/tcp
+
+firewall-cmd --permanent --zone=public --add-port=21001/tcp
+firewall-cmd --permanent --zone=public --add-port=23001/tcp
+firewall-cmd --permanent --zone=public --add-port=22001-22003/tcp
+
+firewall-cmd --reload
+
+
+sysctl -w vm.max_map_count=262144
+
+vim /etc/sysctl.conf
+
+vm.max_map_count=262144
+
+sysctl -p
+
+
+
+修改配置文件/etc/security/limits.conf
+
+* soft     fsize             unlimited
+* hard    fsize             unlimited
+* soft     cpu              unlimited
+* hard    cpu              unlimited
+* soft     as                 unlimited
+* hard    as                unlimited
+* soft     nofile           655350
+* hard    nofile           655350
+* soft     nproc           655350
+* hard    nproc           655350
+
+
+
+vim /etc/profile
+export MONGODB_HOME=/usr/local/mongodb/mongodb-4.0.10
+export PATH=$MONGODB_HOME/bin:$PATH
+source  /etc/profile
+
+
+#生成秘钥文件
+openssl rand -base64 500 > keyfile
+chmod 400 keyfile
+
+
+
+sysctl -w vm.zone_reclaim_mode=0 //内存不足时，从其他节点分配内存
+
+echo never > /sys/kernel/mm/transparent_hugepage/enabled
+echo never > /sys/kernel/mm/transparent_hugepage/defrag 
+
+
+vim /etc/rc.d/rc.local
+
+if test -f /sys/kernel/mm/transparent_hugepage/enabled; then
+echo never > /sys/kernel/mm/transparent_hugepage/enabled
+fi
+if test -f /sys/kernel/mm/transparent_hugepage/defrag; then
+echo never > /sys/kernel/mm/transparent_hugepage/defrag
+fi
+
+echo 0 > /proc/sys/vm/zone_reclaim_mode ; echo "vm.zone_reclaim_mode = 0" >> /etc/sysctl.conf
+
+echo 0 | sudo tee /proc/sys/vm/zone_reclaim_mode；
+或者
+sudo sysctl -w vm.zone_reclaim_mode=0
+
+
+echo vm.swappiness=1 >> /etc/sysctl.conf
+sysctl  -p
+
+#清除缓存
+echo 3 > /proc/sys/vm/drop_caches
+
+
+
+
+
+
+
+
+

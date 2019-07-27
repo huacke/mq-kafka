@@ -1,0 +1,23 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.mq</groupId>
+	<artifactId>mq-consumer</artifactId>
+	<version>1.0.0.0</version>
+	<packaging>jar</packaging>
+
+	<name>${project.artifactId}</name>
+	<description>mq消费端依赖</description>
+    <parent>
+		<groupId>com.mq</groupId>
+		<artifactId>mq</artifactId>
+		<version>1.0.0.0</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+	<dependencies>
+		<dependency>
+			<groupId>com.mq</groupId>
+			<artifactId>mq-common</artifactId>
+		</dependency>
+	</dependencies>
+</project>

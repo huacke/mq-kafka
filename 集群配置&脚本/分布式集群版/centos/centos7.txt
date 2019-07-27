@@ -1,0 +1,83 @@
+#配置用户名
+vi /etc/hostname 
+
+#yum镜像加速
+sudo yum install  yum-plugin-fastestmirror -y
+
+#安装yum多线程下载工具
+sudo yum install axel -y
+ 
+mv axelget.conf /etc/yum/pluginconf.d/
+mv axelget.py  /usr/lib/yum-plugins/
+
+#安装常用库
+
+yum groupinstall   "Development tools" -y 
+
+sudo yum install  yum-plugin-fastestmirror epel-release  ntp ntpdate lrzsz vim  wget telnet perl perl-devel net-tools kernel-devel make gdb cmake cmake git tig git-svn gcc gcc-c++ gcc-gfortran compat-gcc-44 compat-gcc-44-c++ compat-gcc-44-gfortran compat-libf2c-34 -y
+
+sudo yum install  ntfs-3g p7zip unrar zsh autojump autojump-zsh  nfs-utils dos2unix unix2dos meld   links  axel  net-tools -y
+
+
+
+#设置时间同步
+
+vi /etc/sysconfig/clock 
+
+ZONE=Asia/Shanghai
+UTC=false
+ARC=false
+
+
+
+ln -sf /usr/share/zoneinfo/Asia/Shanghai    /etc/localtime  
+
+ntpdate cn.pool.ntp.org
+
+/sbin/hwclock --systohc
+
+
+关闭selinux 
+进入到/etc/selinux/config文件
+将SELINUX=enforcing改为SELINUX=disabled
+
+####防火墙
+
+//临时关闭
+service iptables stop
+//禁止开机启动
+chkconfig iptables off
+
+
+1、firewalld的基本使用
+
+#启动 
+systemctl start firewalld
+#关闭 
+systemctl stop firewalld
+#查看状态 
+systemctl status firewalld 
+#开机禁用 
+systemctl disable firewalld
+开机启用
+systemctl enable firewalld
+
+
+# 查询端口是否开放
+firewall-cmd --query-port=8080/tcp
+# 开放80端口
+firewall-cmd --permanent --add-port=80/tcp
+firewall-cmd --permanent --add-port=8080-8085/tcp
+# 移除端口
+firewall-cmd --permanent --remove-port=8080/tcp
+
+
+
+
+
+
+
+
+
+
+
