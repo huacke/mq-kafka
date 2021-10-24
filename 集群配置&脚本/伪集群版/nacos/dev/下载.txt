@@ -1,0 +1,1 @@
+去nacos官网下载最新版本,放置dockerFile目录下

@@ -1,0 +1,11 @@
+[Unit]
+Description=kafka监控服务
+After=network.target
+After=syslog.target
+
+[Service]
+Type=forking
+ExecStart=/usr/local/kafka/script/startkafkaEagle.sh start
+
+[Install]
+WantedBy=multi-user.target

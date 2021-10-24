@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="${mapperPackageName}.${mapperClassName}">
+    <resultMap id="BaseResultMap" type="${entityPackageName}.${entityClassName}">
+<%for(column in columns){%>
+<%if(column.columnName == pk.columnName){%>
+        <id column="${column.columnName}" jdbcType="${column.jdbcType}" property="${column.fieldName}" />
+<%}else{%>
+        <result column="${column.columnName}" jdbcType="${column.jdbcType}" property="${column.fieldName}" />
+<%}}%>
+    </resultMap>
+    <sql id="Example_Where_Clause">
+        <where>
+            <foreach collection="oredCriteria" item="criteria" separator="or">
+                <if test="criteria.valid">
+                    <trim prefix="(" prefixOverrides="and" suffix=")">
+                        <foreach collection="criteria.criteria" item="criterion">
+                            <choose>
+                                <when test="criterion.noValue">
+                                    and <if test="prefix!=null">\${prefix}.</if>\${criterion.condition}
+                                </when>
+                                <when test="criterion.singleValue">
+                                    and <if test="prefix!=null">\${prefix}.</if>\${criterion.condition} #{criterion.value}
+                                </when>
+                                <when test="criterion.betweenValue">
+                                    and <if test="prefix!=null">\${prefix}.</if>\${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                                </when>
+                                <when test="criterion.listValue">
+                                    and <if test="prefix!=null">\${prefix}.</if>\${criterion.condition}
+                                    <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                                        #{listItem}
+                                    </foreach>
+                                </when>
+                            </choose>
+                        </foreach>
+                    </trim>
+                </if>
+            </foreach>
+        </where>
+    </sql>
+    <sql id="Update_By_Example_Where_Clause">
+        <where>
+            <foreach collection="example.oredCriteria" item="criteria" separator="or">
+              <choose>
+                <when test="criteria.valid">
+                    <trim prefix="(" prefixOverrides="and" suffix=")">
+                        <foreach collection="criteria.criteria" item="criterion">
+                            <choose>
+                                <when test="criterion.noValue">
+                                    and \${criterion.condition}
+                                </when>
+                                <when test="criterion.singleValue">
+                                    and \${criterion.condition} #{criterion.value}
+                                </when>
+                                <when test="criterion.betweenValue">
+                                    and \${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                                </when>
+                                <when test="criterion.listValue">
+                                    and \${criterion.condition}
+                                    <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                                        #{listItem}
+                                    </foreach>
+                                </when>
+                            </choose>
+                        </foreach>
+                    </trim>
+                </when>
+                <when test="criteria.valid == false">
+                      and 0>1
+                </when>
+              </choose>
+            </foreach>
+        </where>
+    </sql>
+    <sql id="Base_Column_List">
+       <% for(column in columns) { %>${column.columnName}<% if(!columnLP.last){ %>,<% }%><%  }%>
+    </sql>
+    <insert id="insert" <%if(pk != null && pk.extra == 'auto_increment'){%> keyProperty="${pk.fieldName}"   useGeneratedKeys="true" <%}%> parameterType="${entityPackageName}.${entityClassName}">
+      insert into ${tableName} (
+<%for(column in columns){%><%if(column.columnName == pk.columnName){%><%if(column.extra != 'auto_increment'){%>
+            ${column.columnName}<% if(!columnLP.last){ %>,<% }%>
+<%}}else{%>
+            ${column.columnName}<% if(!columnLP.last){ %>,<% }%>
+<%}}%>
+       )values (
+<%for(column in columns){%><%if(column.columnName == pk.columnName){%>
+<%if(column.extra != 'auto_increment'){%>
+           #{${column.fieldName},jdbcType=${column.jdbcType}}<% if(!columnLP.last){ %>,<% }%>
+<%}%><%}else{%>
+           #{${column.fieldName},jdbcType=${column.jdbcType}}<% if(!columnLP.last){ %>,<% }%>
+<%}}%>
+      )
+    </insert>
+    <insert id="insertSelective" <%if(pk!=null && pk.extra == 'auto_increment'){%>  keyProperty="${pk.fieldName}"   useGeneratedKeys="true" <%}%>   parameterType="${entityPackageName}.${entityClassName}">
+        insert into ${tableName}
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+<%for(column in columns){%>
+<%if(column.columnName == pk.columnName){%><%if(column.extra != 'auto_increment'){%>
+            <if test="${column.fieldName} != null">
+              ${column.columnName}<% if(!columnLP.last){ %>,<% }%>
+            </if>
+<%}}else{%>
+            <if test="${column.fieldName} != null">
+              ${column.columnName}<% if(!columnLP.last){ %>,<% }%>
+            </if>
+<%}}%>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+<%for(column in columns){%>
+<%if(column.columnName == pk.columnName){%><%if(column.extra != 'auto_increment'){%>
+          <if test="${column.fieldName} != null">
+             #{${column.fieldName},jdbcType=${column.jdbcType}}<% if(!columnLP.last){ %>,<% }%>
+          </if>
+<%}}else{%>
+          <if test="${column.fieldName} != null">
+             #{${column.fieldName},jdbcType=${column.jdbcType}}<% if(!columnLP.last){ %>,<% }%>
+          </if>
+<%}}%>
+        </trim>
+    </insert>
+
+     <insert id="insertBatchAllColumn" <%if(pk!=null && pk.extra == 'auto_increment'){%>  keyProperty="${pk.fieldName}"   useGeneratedKeys="true" <%}%> parameterType="${entityPackageName}.${entityClassName}" >
+
+         insert into ${tableName}
+
+       <trim prefix="(" suffix=")" suffixOverrides=",">
+            <%for(column in columns){%>
+            <%if(column.columnName == pk.columnName){%>
+            <%if(column.extra != 'auto_increment'){%>
+               ${column.columnName}<% if(!columnLP.last){ %>,<% }%>
+            <%}}else{%>
+               ${column.columnName}<% if(!columnLP.last){ %>,<% }%>
+            <%}}%>
+       </trim>
+           values
+            <foreach collection="coll" item="item" separator=",">
+             (
+    <%for(column in columns){%>
+    <%if(column.columnName == pk.columnName){%><%if(column.extra != 'auto_increment'){%>
+                 #{item.${column.fieldName},jdbcType=${column.jdbcType}}<% if(!columnLP.last){ %>,<% }%>
+    <%}}else{%>
+                 #{item.${column.fieldName},jdbcType=${column.jdbcType}}<% if(!columnLP.last){ %>,<% }%>
+    <%}}%>
+              )
+             </foreach>
+     </insert>
+
+     <delete id="deleteByPrimaryKey" parameterType="${pk.javaTypeFull}">
+            delete from ${tableName}
+            where ${pk.columnName} = #{${pk.fieldName},jdbcType=${pk.jdbcType}}
+     </delete>
+
+      <delete id="deleteByIds">
+             delete from ${tableName}
+             where ${pk.columnName} in(
+             <foreach collection="coll" item="item" separator=",">
+                 #{item,jdbcType=${pk.jdbcType}}
+             </foreach>
+             )
+      </delete>
+
+     <delete id="deleteByExample" parameterType="map">
+        <if test="_parameter != null and example.oredCriteria!=null and example.oredCriteria.size()>0 " >
+             delete from ${tableName}
+            <include refid="Update_By_Example_Where_Clause"/>
+        </if>
+     </delete>
+
+     <update id="updateByPrimaryKey" parameterType="${entityPackageName}.${entityClassName}">
+             update ${tableName}
+             <set>
+                <%for(column in columns){%>
+                <%if((column.columnName != pk.columnName) && column.columnName !='UPDATE_TIME'&& column.columnName !='CREATE_ID'
+                            && column.columnName !='CREATE_TIME' && column.columnName !='CREATE_NAME'){%>
+                   ${column.columnName} = #{${column.fieldName},jdbcType=${column.jdbcType}}<% if(!columnLP.last){ %>,<% }%>
+                <%}}%>
+             </set>
+             where ${pk.columnName} = #{${pk.fieldName},jdbcType=${pk.jdbcType}}
+     </update>
+
+
+    <update id="updateByPrimaryKeySelective" parameterType="${entityPackageName}.${entityClassName}">
+        update ${tableName}
+             <set>
+                <%for(column in columns){%>
+                <%if((column.columnName != pk.columnName) && column.columnName !='UPDATE_TIME'&& column.columnName !='CREATE_ID'
+                            && column.columnName !='CREATE_TIME' && column.columnName !='CREATE_NAME'){%>
+                   <if test="${column.fieldName} != null">
+                      ${column.columnName} = #{${column.fieldName},jdbcType=${column.jdbcType}}<% if(!columnLP.last){ %>,<% }%>
+                   </if>
+                <%}}%>
+             </set>
+        where ${pk.columnName} = #{${pk.fieldName},jdbcType=${pk.jdbcType}}
+    </update>
+
+    <update id="updateByExampleSelective" parameterType="map">
+    <if test="_parameter != null and example.oredCriteria!=null and example.oredCriteria.size()>0 ">
+        update ${tableName}
+        <set>
+<%for(column in columns){%>
+<%if((column.columnName != pk.columnName) && column.columnName !='UPDATE_TIME'&& column.columnName !='CREATE_ID'
+            && column.columnName !='CREATE_TIME' && column.columnName !='CREATE_NAME'){%>
+          <if test="record.${column.fieldName} != null">
+             ${column.columnName} = #{record.${column.fieldName},jdbcType=${column.jdbcType}}<% if(!columnLP.last){ %>,<% }%>
+          </if>
+<%}}%>
+        </set>
+            <include refid="Update_By_Example_Where_Clause" />
+        </if>
+    </update>
+
+    <update id="updateByExample" parameterType="map">
+    <if test="_parameter != null and example.oredCriteria!=null and example.oredCriteria.size()>0 ">
+        update ${tableName}
+        <set>
+<%for(column in columns){%>
+<%if(column.columnName != pk.columnName &&  column.columnName !='UPDATE_TIME'
+            &&  column.columnName !='CREATE_ID' &&  column.columnName !='CREATE_TIME' &&  column.columnName !='CREATE_NAME' ){%>
+            ${column.columnName} = #{record.${column.fieldName},jdbcType=${column.jdbcType}}<% if(!columnLP.last){ %>,<% }%>
+<%}}%>
+        </set>
+            <include refid="Update_By_Example_Where_Clause" />
+        </if>
+    </update>
+
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="${pk.javaTypeFull}">
+        select
+        <include refid="Base_Column_List"/>
+        from ${tableName}
+        where ${pk.columnName} = #{${pk.fieldName},jdbcType=${pk.jdbcType}}
+    </select>
+
+     <select id="selectBatchIds" resultMap="BaseResultMap">
+            select
+            <include refid="Base_Column_List"/>
+            from ${tableName}
+            where ${pk.columnName} in(
+            <foreach collection="coll" item="item" separator=",">
+                #{item,jdbcType=${pk.jdbcType}}
+            </foreach>
+            )
+     </select>
+
+    <select id="selectListByMap" parameterType="java.util.Map" resultMap="BaseResultMap">
+      select
+      <include refid="Base_Column_List" />
+      from ${tableName}
+      <trim prefix="WHERE" prefixOverrides="OR|AND">
+<%for(column in columns){%> <%if(column.jdbcType=='TIMESTAMP'){%>
+        <if test="${column.fieldName} != null">
+            and	${column.columnName} = #{${column.fieldName},jdbcType=${column.jdbcType}}
+        </if>
+<%}else{%>
+        <if test="${column.fieldName} != null and ${column.fieldName} != ''">
+            and	${column.columnName} = #{${column.fieldName},jdbcType=${column.jdbcType}}
+        </if>
+<%}}%>
+      </trim>
+      <if test="orderByClause != null">
+         order by \${orderByClause}
+      </if>
+    </select>
+
+
+    <select id="selectByExample" parameterType="${entityPackageName}.${className}Example" resultMap="BaseResultMap">
+        select
+        <if test="distinct">
+          distinct
+        </if>
+        <include refid="Base_Column_List" />
+        from  ${tableName}
+        <if test="_parameter != null">
+            <include refid="Example_Where_Clause" />
+        </if>
+        <if test="orderByClause != null">
+            order by \${orderByClause}
+        </if>
+    </select>
+
+
+    <select id="selectOneByExample" parameterType="${entityPackageName}.${className}Example"  resultMap="BaseResultMap">
+        select
+        <if test="distinct">
+            distinct
+        </if>
+        <include refid="Base_Column_List"/>
+        from ${tableName}
+        <if test="_parameter != null">
+            <include refid="Example_Where_Clause"/>
+        </if>
+        <if test="orderByClause != null">
+            order by \${orderByClause}
+        </if>
+        limit 1
+    </select>
+
+     <select id="countByExample" parameterType="${entityPackageName}.${className}Example" resultType="int">
+             select count(*) from ${tableName}
+             <if test="_parameter != null">
+                 <include refid="Example_Where_Clause" />
+             </if>
+     </select>
+
+     <select id="countByMap" parameterType="java.util.Map" resultType="int">
+             select
+             count(*)
+             from ${tableName}
+       <trim prefix="WHERE" prefixOverrides="OR|AND">
+     <%for(column in columns){%> <%if(column.jdbcType=='TIMESTAMP'){%>
+        <if test="${column.fieldName} != null">
+            and	${column.columnName} = #{${column.fieldName},jdbcType=${column.jdbcType}}
+        </if>
+     <%}else{%>
+        <if test="${column.fieldName} != null and ${column.fieldName} != ''">
+            and	${column.columnName} = #{${column.fieldName},jdbcType=${column.jdbcType}}
+        </if>
+     <%}}%>
+        </trim>
+        <if test="orderByClause != null">
+              order by \${orderByClause}
+        </if>
+     </select>
+
+</mapper>

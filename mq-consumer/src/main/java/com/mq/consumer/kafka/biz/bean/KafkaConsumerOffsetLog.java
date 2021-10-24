@@ -1,10 +1,9 @@
 package com.mq.consumer.kafka.biz.bean;
 
-import com.mq.entity.BaseObject;
+import com.mq.common.entity.BaseObject;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-
 import java.util.Date;
 
 /**
@@ -34,11 +33,6 @@ public class KafkaConsumerOffsetLog extends BaseObject {
      * 消息偏移量
      */
     private Long  offset;
-
-    /**
-     * 有效状态 0,无效，1 有效
-     */
-    private String state;
     /*
      * 修改时间
      */

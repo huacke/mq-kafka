@@ -12,18 +12,26 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.1.5.RELEASE</version>
+		<version>2.3.11.RELEASE</version>
 	</parent>
 
 	<modules>
+		<module>mq-define</module>
 		<module>mq-framework</module>
-		<module>mq-common</module>
 		<module>mq-service-api</module>
 		<module>mq-consumer</module>
+		<module>mq-web-integration</module>
+		<module>mq-mongo-integration</module>
+		<module>mq-queue-integration</module>
+		<module>mq-redis-integration</module>
+		<module>mq-datasource-integration</module>
+		<module>mq-mybatis-integration</module>
+		<module>mq-bootstrap</module>
 		<module>eureka-server</module>
 		<module>mq-service</module>
 		<module>mq-worker</module>
         <module>mq-service-test</module>
+		<module>code-generator</module>
 	</modules>
 
 	<properties>
@@ -36,15 +44,11 @@
 		<maven.deploy.plugin-version>2.8.2</maven.deploy.plugin-version>
 		<java.version>1.8</java.version>
 
-		<spring-boot.version>2.1.5.RELEASE</spring-boot.version>
-		<spring-cloud.version>Greenwich.SR1</spring-cloud.version>
+		<spring-boot.version>2.3.11.RELEASE</spring-boot.version>
+		<spring-cloud.version>Hoxton.SR11</spring-cloud.version>
 
-		<!--redis 相关-->
-		<jedis.version>2.9.0</jedis.version>
-		<spring-data-redis.version>2.1.8.RELEASE</spring-data-redis.version>
-		<!-- 搜索相关插件 -->
 		<!-- json -->
-		<fastjson.version>1.2.58</fastjson.version>
+		<fastjson.version>1.2.71</fastjson.version>
 		<gson.version>2.8.0 </gson.version>
 		<guava.version>23.0</guava.version>
 		<!--jackson-->
@@ -66,21 +70,40 @@
 		<junit.version>4.12</junit.version>
 		<!-- swagger -->
 		<swagger.version>2.7.0</swagger.version>
+		<jsqlparser.version>1.1</jsqlparser.version>
+
+		<druid.version>1.1.9</druid.version>
+
+		<mybatis.version>3.4.5</mybatis.version>
+
+		<mybatis-spring-boot-starter.version>1.3.1</mybatis-spring-boot-starter.version>
 
 		<transmittable-thread-local.version>2.4.0</transmittable-thread-local.version>
 
-		<kafka.version>2.3.0</kafka.version>
+		<lettuce.version>5.2.1.RELEASE</lettuce.version>
 
-		<kafka-clients.version>2.3.0</kafka-clients.version>
+		<kafka-client.version>2.5.1</kafka-client.version>
 
+		<mq-define-version>1.0.0.0</mq-define-version>
 		<mq-framework-version>1.0.0.0</mq-framework-version>
 		<mq-consumer-version>1.0.0.0</mq-consumer-version>
 		<mq-service-api-version>1.0.0.0</mq-service-api-version>
-		<mq-common-version>1.0.0.0</mq-common-version>
+		<mq-web-integration-version>1.0.0.0</mq-web-integration-version>
+		<mq-mongo-integration-version>1.0.0.0</mq-mongo-integration-version>
+		<mq-queue-integration-version>1.0.0.0</mq-queue-integration-version>
+		<mq-redis-integration-version>1.0.0.0</mq-redis-integration-version>
+		<mq-datasource-integration-version>1.0.0.0</mq-datasource-integration-version>
+		<mq-mybatis-integration-version>1.0.0.0</mq-mybatis-integration-version>
+		<mq-bootstrap.version>1.0.0.0</mq-bootstrap.version>
 	</properties>
 
 	<dependencyManagement>
 		<dependencies>
+			<dependency>
+				<groupId>com.mq</groupId>
+				<artifactId>mq-define</artifactId>
+				<version>${mq-define-version}</version>
+			</dependency>
 			<dependency>
 				<groupId>com.mq</groupId>
 				<artifactId>mq-framework</artifactId>
@@ -98,11 +121,43 @@
 				<artifactId>mq-service-api</artifactId>
 				<version>${mq-service-api-version}</version>
 			</dependency>
+			<dependency>
+				<groupId>com.mq</groupId>
+				<artifactId>mq-mongo-integration</artifactId>
+				<version>${mq-mongo-integration-version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.mq</groupId>
+				<artifactId>mq-queue-integration</artifactId>
+				<version>${mq-queue-integration-version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.mq</groupId>
+				<artifactId>mq-redis-integration</artifactId>
+				<version>${mq-redis-integration-version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.mq</groupId>
+				<artifactId>mq-datasource-integration</artifactId>
+				<version>${mq-datasource-integration-version}</version>
+			</dependency>
 
 			<dependency>
 				<groupId>com.mq</groupId>
-				<artifactId>mq-common</artifactId>
-				<version>${mq-common-version}</version>
+				<artifactId>mq-mybatis-integration</artifactId>
+				<version>${mq-mybatis-integration-version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.mq</groupId>
+				<artifactId>mq-web-integration</artifactId>
+				<version>${mq-web-integration-version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.mq</groupId>
+				<artifactId>mq-bootstrap</artifactId>
+				<version>${mq-bootstrap.version}</version>
 			</dependency>
 
 			<dependency>
@@ -129,28 +184,46 @@
 			</dependency>
 
 			<dependency>
+				<groupId>com.google.guava</groupId>
+				<artifactId>guava</artifactId>
+				<version>${guava.version}</version>
+			</dependency>
+
+			<dependency>
 				<groupId>commons-io</groupId>
 				<artifactId>commons-io</artifactId>
 				<version>${commons-io.version}</version>
 			</dependency>
 
 			<dependency>
-				<groupId>org.springframework.data</groupId>
-				<artifactId>spring-data-redis</artifactId>
-				<version>${spring-data-redis.version}</version>
+				<groupId>com.github.jsqlparser</groupId>
+				<artifactId>jsqlparser</artifactId>
+				<version>${jsqlparser.version}</version>
+			</dependency>
+
+
+			<dependency>
+				<groupId>org.mybatis.spring.boot</groupId>
+				<artifactId>mybatis-spring-boot-starter</artifactId>
+				<version>${mybatis-spring-boot-starter.version}</version>
+			</dependency>
+
+			<!-- druid阿里巴巴数据库连接池 -->
+			<dependency>
+				<groupId>com.alibaba</groupId>
+				<artifactId>druid-spring-boot-starter</artifactId>
+				<version>${druid.version}</version>
 			</dependency>
 
 			<dependency>
-				<groupId>org.apache.kafka</groupId>
-				<artifactId>kafka-clients</artifactId>
-				<version>${kafka-clients.version}</version>
+				<groupId>io.lettuce</groupId>
+				<artifactId>lettuce-core</artifactId>
+				<version>${lettuce.version}</version>
 			</dependency>
-
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-commons</artifactId>
 			</dependency>
-
 		</dependencies>
 	</dependencyManagement>
 
@@ -162,13 +235,6 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-aop</artifactId>
-		</dependency>
-		<!-- redis -->
-
-		<dependency>
-			<groupId>redis.clients</groupId>
-			<artifactId>jedis</artifactId>
-			<version>${jedis.version}</version>
 		</dependency>
 		<!--google工具包-->
 		<dependency>
@@ -218,6 +284,7 @@
 		<dependency>
 			<groupId>org.apache.kafka</groupId>
 			<artifactId>kafka-clients</artifactId>
+			<version>${kafka-client.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-lang</groupId>
@@ -228,7 +295,6 @@
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
-			<version>${commons-io.version}</version>
 		</dependency>
 
 		<dependency>
@@ -333,6 +399,5 @@
 			</resource>
 		</resources>
 	</build>
-
 
 </project>

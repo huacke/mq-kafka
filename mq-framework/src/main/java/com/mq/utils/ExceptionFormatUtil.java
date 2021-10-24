@@ -7,7 +7,7 @@ public  class ExceptionFormatUtil {
 
     private static final Log log = LogFactory.getLog(ExceptionFormatUtil.class);
 
-    private static String filterPackage = "com.walton";
+    private static String filterPackage = "com.mq";
 
     /**
      * 将Exception的异常栈按简化输出(只输出 filterPackage路径开头的类调用栈)

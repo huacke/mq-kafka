@@ -1,6 +1,6 @@
 package com.mq.consumer.kafka;
 
-import com.mq.common.config.kafka.KafkaConfiguration;
+import com.mq.config.kafka.KafkaConfiguration;
 import org.apache.commons.lang.StringUtils;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -32,19 +32,19 @@ public class KafkaConsumerBuilder {
         //特别要注意业务执行逻辑尽量要快，超时了会引起分区再均衡，而且无法提交offset
         props.put("max.poll.interval.ms", 1800*1000);
         //每次最小从kafka拉取的消息字节数
-        props.put("fetch.min.bytes", 1*1024);
+        props.put("fetch.min.bytes",128);
         //每次最大从kafka拉取的消息字节数
-        props.put("fetch.max.bytes", 450*1024);
+        props.put("fetch.max.bytes", 1000*1024);
         //每次从kafka拉取消息的间隔时间
 	    props.put("fetch.max.wait.ms", 100);
         //每次最多能从kafka单个分区拉取消息的字节数
-        props.put("max.partition.fetch.bytes", 150*1024);
+        props.put("max.partition.fetch.bytes", 1000*1024);
         //从分区消费起始偏移  earliest：分区最起始位置 latest:分区消息最后偏移量位置
-        props.put("auto.offset.reset", "earliest");
+        props.put("auto.offset.reset", "latest");
         //是否自动提交偏移量
         props.put("enable.auto.commit", "false");
         //消费者心跳超时时间，超过此时间，服务器没有收到消费者心跳，就会认为此消费者下线，从而触发发分区再均衡操作
-        props.put("session.timeout.ms", 16*1000);
+        props.put("session.timeout.ms", 30*1000);
         //消费者发送心跳频率
         props.put("heartbeat.interval.ms", 2*1000);
 

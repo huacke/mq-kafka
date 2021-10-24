@@ -1,0 +1,12 @@
+package ${daoPackageName};
+
+import ${mapperPackageName}.${mapperClassName};
+import org.springframework.stereotype.Repository;
+/**
+ * ${tableComment} (${className}Dao)
+ * @author： ${author}
+ */
+@Repository
+public interface ${daoClassName} extends ${mapperClassName}{
+
+}

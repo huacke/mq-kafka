@@ -1,0 +1,25 @@
+version: '3.2'
+
+services:
+  mysql-dev:
+    image: middleware/mysql-dev
+    container_name: mysql-dev
+    privileged: true
+    restart: always
+    build: .
+    ports:
+      - '3306:3306'
+    volumes:
+      - mysql-dev-data:/usr/local/mysql
+    networks:
+     - mysql-dev-net
+networks:
+  mysql-dev-net:
+    driver: bridge
+volumes:
+  mysql-dev-data: 
+    driver: local-persist #docker本地数据持久化插件
+    driver_opts: 
+      mountpoint: /data/dockerData/mysql-dev-data
+
+    

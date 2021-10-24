@@ -1,0 +1,4 @@
+//安装包下载地址
+http://mirrors.jenkins.io/war-stable/
+
+找到对应版本下载,放至dockerFile目录下,修改dockerFile声明的版本号和文件名

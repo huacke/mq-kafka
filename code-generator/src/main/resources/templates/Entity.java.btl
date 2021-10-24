@@ -1,0 +1,38 @@
+package ${entityPackageName};
+
+import com.mq.common.entity.BaseObject;
+import lombok.Data;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Column;
+<%for(column in columns){%>
+<%if(column.javaType == 'BigDecimal'){%>
+import java.math.BigDecimal;
+<% break; }}%>
+<%for(column in columns){%>
+<%if(column.javaType == 'Date'){%>
+import java.util.Date;
+<% break;}}%>
+
+/**
+ * ${tableComment} (${className})
+ * @author：  ${author}
+ */
+@Data
+@Table(name = "${tableName}")
+public class ${entityClassName} extends BaseObject{
+
+<%for(column in columns){%>
+<%if(column.columnName == pk.columnName){%>
+    /** ${column.comments} */
+	@Id
+    @Column(name="${column.columnName}")
+	private ${column.javaType} ${column.fieldName};
+<%}else{%>
+	/** ${column.comments} */
+    @Column(name="${column.columnName}")
+	private ${column.javaType} ${column.fieldName};
+<%}}%>
+
+}
+

@@ -7,7 +7,7 @@ config={
     members: [
       { _id : 1, host : "192.168.0.109:22001"},
       { _id : 2, host : "192.168.0.111:22001"},
-	  { _id : 3, host : "192.168.0.117:22001"}
+	  { _id : 3, host : "192.168.0.100:22001"}
     ]
 }
 
@@ -20,16 +20,15 @@ db.createUser({user:"root",pwd:"root",roles:[{role:"root", db:"admin"}]})
 
 db.auth("root","root")
 
-db.createUser({user: "system",pwd: "root",roles: [ { role: "__system", db: "admin" } ]})
+db.createUser({user: "system",pwd: "system",roles: [ { role: "__system", db: "admin" } ]})
 
 use mq
 
 db.createUser({user:"root",pwd:"root",roles:[{role:"dbOwner",db:"mq"}]})
 
-db.createUser({user:"develop",pwd:"develop",roles:[{role:"readWrite",db:"mq"}]})
+db.createUser({user:"mq",pwd:"mq",roles:[{role:"readWrite",db:"mq"}]})
 
 db.createUser({user:"read",pwd:"read",roles:[{role:"read",db:"mq"}]})
-
 
 
 
@@ -44,7 +43,7 @@ config={
     members: [
       { _id : 1, host : "192.168.0.109:22002"},
       { _id : 2, host : "192.168.0.111:22002"},
-	  { _id : 3, host : "192.168.0.117:22002"}
+	  { _id : 3, host : "192.168.0.100:22002"}
     ]
 }
 rs.initiate(config)
@@ -55,14 +54,14 @@ db.createUser({user:"root",pwd:"root",roles:[{role:"root", db:"admin"}]})
 
 db.auth("root","root")
 
-db.createUser({user: "system",pwd: "root",roles: [ { role: "__system", db: "admin" } ]})
+db.createUser({user: "system",pwd: "system",roles: [ { role: "__system", db: "admin" } ]})
 
 
 use mq
 
 db.createUser({user:"root",pwd:"root",roles:[{role:"dbOwner",db:"mq"}]})
 
-db.createUser({user:"develop",pwd:"develop",roles:[{role:"readWrite",db:"mq"}]})
+db.createUser({user:"mq",pwd:"mq",roles:[{role:"readWrite",db:"mq"}]})
 
 db.createUser({user:"read",pwd:"read",roles:[{role:"read",db:"mq"}]})
 
@@ -80,7 +79,7 @@ config={
     members: [
       { _id : 1, host : "192.168.0.109:22003"},
       { _id : 2, host : "192.168.0.111:22003"},
-	  { _id : 3, host : "192.168.0.117:22003"}
+	  { _id : 3, host : "192.168.0.100:22003"}
     ]
 }
 rs.initiate(config)
@@ -90,71 +89,17 @@ db.createUser({user:"root",pwd:"root",roles:[{role:"root", db:"admin"}]})
 
 db.auth("root","root")
 
-db.createUser({user: "system",pwd: "root",roles: [ { role: "__system", db: "admin" } ]})
+db.createUser({user: "system",pwd: "system",roles: [ { role: "__system", db: "admin" } ]})
 
 
 use mq
 
 db.createUser({user:"root",pwd:"root",roles:[{role:"dbOwner",db:"mq"}]})
 
-db.createUser({user:"develop",pwd:"develop",roles:[{role:"readWrite",db:"mq"}]})
+db.createUser({user:"mq",pwd:"mq",roles:[{role:"readWrite",db:"mq"}]})
 
 db.createUser({user:"read",pwd:"read",roles:[{role:"read",db:"mq"}]})
 
-
-
-mongo --port 24001
-
-use admin
-
-config={
-    _id: "shardmms",
-    members: [
-      { _id : 1, host : "192.168.0.109:24001"},
-      { _id : 2, host : "192.168.0.111:24001"},
-	  { _id : 3, host : "192.168.0.117:24001"}
-    ]
-}
-
-rs.initiate(config)
-
-
-rs.status()
-
-
-db.createUser({user:"root",pwd:"root",roles:[{role:"root", db:"admin"}]})
-
-db.auth("root","root")
-
-db.createUser({user: "system",pwd: "root",roles: [ { role: "__system", db: "admin" } ]})
-
-
-
-
-mongo --port 25001
-
-use admin
-
-config={
-    _id: "shardmms-backup",
-    members: [
-      { _id : 1, host : "192.168.0.109:25001"},
-      { _id : 2, host : "192.168.0.111:25001"},
-	  { _id : 3, host : "192.168.0.117:25001"}
-    ]
-}
-
-rs.initiate(config)
-
-
-rs.status()
-
-
-db.createUser({user:"root",pwd:"root",roles:[{role:"root", db:"admin"}]})
-
-db.auth("root","root")
-
-db.createUser({user: "system",pwd: "root",roles: [ { role: "__system", db: "admin" } ]})
 
 
 
@@ -167,7 +112,7 @@ config={
     members: [
       { _id : 1, host : "192.168.0.109:21001"},
       { _id : 2, host : "192.168.0.111:21001"},
-      { _id : 3, host : "192.168.0.117:21001"}
+      { _id : 3, host : "192.168.0.100:21001"}
     ]
 }
 rs.initiate(config)
@@ -176,13 +121,12 @@ db.createUser({user:"root",pwd:"root",roles:[{role:"root", db:"admin"}]})
 
 db.auth("root","root")
 
-db.createUser({user: "system",pwd: "root",roles: [ { role: "__system", db: "admin" } ]})
+db.createUser({user: "system",pwd: "system",roles: [ { role: "__system", db: "admin" } ]})
 
 
 use config
 
 db.createUser({user:"root",pwd:"root",roles:[{role:"dbOwner", db:"config"}]})
-
 
 
 
@@ -194,11 +138,11 @@ use admin
 
 db.auth("root","root")
 
-sh.addShard("shard1/192.168.0.109:22001,192.168.0.111:22001,192.168.0.117:22001")
+sh.addShard("shard1/192.168.0.109:22001,192.168.0.111:22001,192.168.0.100:22001")
 
-sh.addShard("shard2/192.168.0.109:22002,192.168.0.111:22002,192.168.0.117:22002")
+sh.addShard("shard2/192.168.0.109:22002,192.168.0.111:22002,192.168.0.100:22002")
 
-sh.addShard("shard3/192.168.0.109:22003,192.168.0.111:22003,192.168.0.117:22003")
+sh.addShard("shard3/192.168.0.109:22003,192.168.0.111:22003,192.168.0.109:22003")
 
 
 
@@ -215,27 +159,25 @@ db.createRole({role:"superman", privileges:[{resource:{anyResource: true}, actio
 
 
 //数据库进行分片
-sh.enableSharding("mq")
+sh.enableSharding("mq")  
 
-//创建测试库
-use test
-db.createUser({user:"test",pwd:"test",roles:[{role:"dbOwner", db:"test"}]})
-db.auth("test","test")
-for(i=1;i<=1000;i++){db.testdata.insert({id:i+3,name:i+3+""})}
 
-//创建mq库
+
+//创建业务库用户
 use  mq
 
 db.createUser({user:"root",pwd:"root",roles:[{role:"dbOwner",db:"mq"}]})
 
 db.auth("root","root")
 
-db.createUser({user:"develop",pwd:"develop",roles:[{role:"readWrite",db:"mq"}]})
-
+db.createUser({user:"mq",pwd:"mq",roles:[{role:"readWrite",db:"mq"}]})
 
 db.createUser({user:"read",pwd:"read",roles:[{role:"read",db:"mq"}]})
 
 
+
+use admin
+db.auth("root","root")
 
 db.runCommand({"shardcollection":"mq.kafka_deaded_msg_log","key":{"_id":"hashed"}})
 db.runCommand({"shardcollection":"mq.kafka_msg_log","key":{"_id":"hashed"}})
@@ -246,15 +188,16 @@ db.runCommand({"shardcollection":"mq.kafka_consumer_offset_log","key":{"_id":"ha
 db.runCommand({"shardcollection":"mq.kafka_consumer_work_log","key":{"_id":"hashed"}})
 
 
+use mq
+
+db.auth("root","root")
+
+
 
 //创建索引
 db.kafka_deaded_msg_log.ensureIndex({msgId:-1},{"background":true})
 
-db.kafka_deaded_msg_log.ensureIndex({topic:-1},{"background":true})
-
 db.kafka_deaded_msg_log.ensureIndex({msgKey:-1},{"background":true})
-
-db.kafka_deaded_msg_log.ensureIndex({msgType:1},{"background":true})
 
 db.kafka_deaded_msg_log.ensureIndex({createtime:-1},{"background":true})
 
@@ -267,52 +210,38 @@ db.kafka_msg_log.ensureIndex({topic:-1},{"background":true})
 
 db.kafka_msg_log.ensureIndex({msgKey:-1},{"background":true})
 
-db.kafka_msg_log.ensureIndex({msgType:1},{"background":true})
-
 db.kafka_msg_log.ensureIndex({createtime:-1},{"background":true})
 
 db.kafka_msg_log.ensureIndex({updateTime:-1},{"background":true})
 
 
-db.kafka_request_log.ensureIndex({digest:-1},{"background":true})
-
 db.kafka_request_log.ensureIndex({msgId:-1},{"background":true})
 
-db.kafka_request_log.ensureIndex({topic:-1},{"background":true})
-
 db.kafka_request_log.ensureIndex({msgKey:-1},{"background":true})
-
-db.kafka_request_log.ensureIndex({msgType:1},{"background":true})
 
 db.kafka_request_log.ensureIndex({createtime:-1},{"background":true})
 
 db.kafka_request_log.ensureIndex({costTime:-1},{"background":true})
 
 
-
-db.kafka_consumer_msg_log.ensureIndex({digest:-1},{"background":true})
-
-db.kafka_consumer_msg_log.ensureIndex({topic:-1},{"background":true})
-
-db.kafka_consumer_msg_log.ensureIndex({digest:-1},{"background":true})
+db.kafka_consumer_msg_log.ensureIndex({msgId:-1},{"background":true})
 
 db.kafka_consumer_msg_log.ensureIndex({msgKey:-1},{"background":true})
-
-db.kafka_consumer_msg_log.ensureIndex({msgType:1},{"background":true})
 
 db.kafka_consumer_msg_log.ensureIndex({createtime:-1},{"background":true})
 
 
-db.kafka_consumer_work_log.ensureIndex({digest:-1},{"background":true})
-
 db.kafka_consumer_work_log.ensureIndex({msgId:-1},{"background":true})
 
-db.kafka_consumer_work_log.ensureIndex({topic:-1},{"background":true})
-
 db.kafka_consumer_work_log.ensureIndex({msgKey:-1},{"background":true})
-
-db.kafka_consumer_work_log.ensureIndex({msgType:1},{"background":true})
 
 db.kafka_consumer_work_log.ensureIndex({createtime:-1},{"background":true})
 
 db.kafka_consumer_work_log.ensureIndex({costTime:-1},{"background":true})
+
+
+db.kafka_process_msg_log.ensureIndex({msgId:-1},{"background":true})
+db.kafka_process_msg_log.ensureIndex({msgKey:-1},{"background":true})
+db.kafka_process_msg_log.ensureIndex({createtime:-1},{"background":true})
+
+

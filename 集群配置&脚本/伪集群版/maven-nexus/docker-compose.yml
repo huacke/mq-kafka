@@ -1,0 +1,25 @@
+version: '3.2'
+
+services:
+  maven-nexus:
+    image: middleware/maven-nexus
+    container_name: maven-nexus
+    privileged: true
+    restart: always
+    build: .
+    ports:
+      - '8081:8081'
+    volumes:
+      - maven-nexus-data:/nexus-data
+    networks:
+     - maven-nexus-net
+networks:
+  maven-nexus-net:
+    driver: bridge
+volumes:
+  maven-nexus-data: 
+    driver: local-persist #docker本地数据持久化插件
+    driver_opts: 
+      mountpoint: /data/dockerData/maven-nexus-data
+
+    

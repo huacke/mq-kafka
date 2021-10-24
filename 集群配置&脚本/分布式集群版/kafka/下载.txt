@@ -1,3 +1,0 @@
-kafka  http://mirrors.tuna.tsinghua.edu.cn/apache/kafka/2.3.0/kafka_2.12-2.3.0.tgz
-
-scala https://downloads.lightbend.com/scala/2.12.8/scala-2.12.8.tgz

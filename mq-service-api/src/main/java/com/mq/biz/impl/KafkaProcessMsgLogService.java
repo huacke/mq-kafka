@@ -1,6 +1,5 @@
 package com.mq.biz.impl;
 
-import com.mq.mongo.dao.BaseMongoDao;
 import com.mq.mongo.service.impl.BaseMongoService;
 import com.mq.biz.bean.KafkaProcessMsgLog;
 import com.mq.mongo.dao.KafkaProcessMsgLogDao;
@@ -18,15 +17,10 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @Primary
-public class KafkaProcessMsgLogService extends BaseMongoService<KafkaProcessMsgLog,String>{
+public class KafkaProcessMsgLogService extends BaseMongoService<KafkaProcessMsgLog,KafkaProcessMsgLogDao,String>{
 
     @Autowired
-    private KafkaProcessMsgLogDao kafkaProcessMsgLogDao;
-
-    @Override
-    protected BaseMongoDao populateDao() {
-        return kafkaProcessMsgLogDao;
-    }
+    KafkaProcessMsgLogDao kafkaProcessMsgLogDao;
     /**
      * @Description 保存日志
      * @param  kafkaProcessMsgLog
@@ -49,18 +43,13 @@ public class KafkaProcessMsgLogService extends BaseMongoService<KafkaProcessMsgL
         kafkaProcessMsgLog.setStatus(message.getStatus());
         kafkaProcessMsgLog.setSourceMsgId(message.getHeader().getSourceMsgId());
         kafkaProcessMsgLog.setMsgId(message.getHeader().getMsgId());
-        kafkaProcessMsgLog.setSourceSystem(message.getHeader().getSourceSystem());
         kafkaProcessMsgLog.setDeaded(MsgStatus.DEAD.equals(message.getStatus())?1:0);
-        kafkaProcessMsgLog.setSrcHost(message.getHeader().getSrcHost());
         kafkaProcessMsgLog.setMsgKey(message.getMessageBody().getMsgKey());
         kafkaProcessMsgLog.setMsgType(message.getMsgType());
         kafkaProcessMsgLog.setMsgSubType(message.getMsgSubType());
         kafkaProcessMsgLog.setState("1");
         kafkaProcessMsgLog.setRetrytimes(0);
         kafkaProcessMsgLog.setVersion(0);
-        kafkaProcessMsgLog.setCreateId("0");
-        kafkaProcessMsgLog.setUpdateId("0");
-        kafkaProcessMsgLog.setRemark("");
         kafkaProcessMsgLog.setMessage(GsonHelper.toJson(message));
         kafkaProcessMsgLog.setCreatetime(message.getHeader().getCreatetime());
         kafkaProcessMsgLog.setUpdateTime(message.getHeader().getCreatetime());

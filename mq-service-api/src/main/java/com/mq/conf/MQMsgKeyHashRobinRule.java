@@ -1,8 +1,8 @@
 package com.mq.conf;
 
+import com.mq.web.feign.FeignClientInvokerIntercepter;
+import com.mq.web.feign.rule.KeyHashRobinRule;
 import com.netflix.loadbalancer.Server;
-import com.mq.feign.FeignClientInvokerIntercepter;
-import com.mq.feign.rule.KeyHashRobinRule;
 import com.mq.msg.BaseMessage;
 import com.mq.msg.MessageBody;
 import com.mq.utils.GsonHelper;

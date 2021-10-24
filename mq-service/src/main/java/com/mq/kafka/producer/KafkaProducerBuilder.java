@@ -1,6 +1,6 @@
 package com.mq.kafka.producer;
 
-import com.mq.common.config.kafka.KafkaConfiguration;
+import com.mq.config.kafka.KafkaConfiguration;
 import com.mq.kafka.partition.KeyHashPartitioner;
 import com.mq.common.utils.StringUtils;
 import org.apache.kafka.clients.CommonClientConfigs;
@@ -38,9 +38,9 @@ public class KafkaProducerBuilder {
         //消息发送失败再重试次数
         props.put("retries", Integer.MAX_VALUE);
         //批量发送消息数量
-        props.put("batch.size", 8000);
+        props.put("batch.size", 1000);
         //批量发送消息时间间隔
-        props.put("linger.ms", 10);
+        props.put("linger.ms", 100);
         //发送队列内存buffer容量
         props.put("buffer.memory", 128*1024*1024);
         //发送队列内存buffer满的情况下可以阻塞多长时间，超过这个时间则抛出异常

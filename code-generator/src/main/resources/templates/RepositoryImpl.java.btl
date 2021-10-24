@@ -1,0 +1,109 @@
+package ${repositoryImplPackageName};
+
+import java.util.List;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
+import org.springframework.context.annotation.Primary;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import com.mq.data.base.impl.BaseRepository;
+import com.mq.common.exception.BussinessException;
+import com.mq.common.exception.code.ErrorCode;
+import com.mq.utils.ExceptionFormatUtil;
+import ${examplePackageName}.${exampleClassName};
+import ${iRepositoryPackageName}.${iRepositoryClassName};
+import ${entityPackageName}.${entityClassName};
+import ${daoPackageName}.${daoClassName};
+
+@Slf4j
+@Service
+@Primary
+public class ${repositoryImplClassName}  extends BaseRepository<${entityClassName}, ${daoClassName}> implements ${iRepositoryClassName} {
+
+    @Autowired
+    private ${daoClassName} ${daoClassObjectName};
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public int deleteByExample(${exampleClassName} example) throws BussinessException {
+        int flag =0;
+        try {
+           if (null == example|| CollectionUtils.isEmpty(example.getOredCriteria()) ) {
+                return flag;
+            }
+            for (${exampleClassName}.Criteria criteria : example.getOredCriteria()) {
+                if (!criteria.isValid()) {
+                    return flag;
+                }
+            }
+            return ${daoClassObjectName}.deleteByExample(example);
+        } catch (Exception e) {
+            log.error("[deleteByExample],example={},error={}", example, ExceptionFormatUtil.getTrace(e,8));
+            throw new BussinessException(ErrorCode.DB_DELETE_ERROR, e);
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public int updateByExample(${entityClassName} record, ${exampleClassName} example) throws BussinessException {
+        try {
+            return ${daoClassObjectName}.updateByExampleSelective(record, example);
+        } catch (Exception e) {
+            log.error("[updateByExample],record={},example={}, error={}", record, example, ExceptionFormatUtil.getTrace(e,8));
+            throw new BussinessException(ErrorCode.DB_UPDATE_ERROR, e);
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public int updateAllColumnByExample(${entityClassName}  record, ${exampleClassName} example) throws BussinessException {
+        try {
+            return ${daoClassObjectName}.updateByExample(record, example);
+        } catch (Exception e) {
+            log.error("[updateAllColumnByExample],record={},example={}, error={}", record, example, ExceptionFormatUtil.getTrace(e,8));
+            throw new BussinessException(ErrorCode.DB_UPDATE_ERROR, e);
+        }
+    }
+
+    @Override
+    public List<${entityClassName}> retrieveListByExample(${exampleClassName} example) throws BussinessException {
+        try {
+            return ${daoClassObjectName}.selectByExample(example);
+        } catch (Exception e) {
+            log.error("[retrieveListByExample],example={}, error={}", example, ExceptionFormatUtil.getTrace(e,8));
+            throw new BussinessException(ErrorCode.DB_QUERY_ERROR, e);
+        }
+    }
+
+    @Override
+    public ${entityClassName} retrieveOneItemByExample(${exampleClassName}  example) throws BussinessException {
+        try {
+            return ${daoClassObjectName}.selectOneByExample(example);
+        } catch (Exception e) {
+            log.error("[retrieveOneItemByExample],example={}, error={}", example, ExceptionFormatUtil.getTrace(e,8));
+            throw new BussinessException(ErrorCode.DB_QUERY_ERROR, e);
+        }
+    }
+
+    @Override
+    public int countByExample(${exampleClassName} example) throws BussinessException {
+        try {
+            return ${daoClassObjectName}.countByExample(example);
+        } catch (Exception e) {
+            log.error("[countByExample],example={}, error={}", example, ExceptionFormatUtil.getTrace(e,8));
+            throw new BussinessException(ErrorCode.DB_QUERY_ERROR, e);
+        }
+    }
+
+    @Override
+    public boolean existsByExample(${exampleClassName} example) throws BussinessException {
+        try {
+            return countByExample(example) > 0;
+        } catch (Exception e) {
+            log.error("[existsByExample],example={}, error={}", example, ExceptionFormatUtil.getTrace(e,8));
+            throw new BussinessException(ErrorCode.DB_QUERY_ERROR, e);
+        }
+    }
+
+}

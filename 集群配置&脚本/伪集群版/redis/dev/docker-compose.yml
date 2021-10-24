@@ -1,0 +1,35 @@
+version: '3.2'
+
+services:
+  redis-sentinel-cluster-dev:
+    image: middleware/redis-sentinel-cluster-dev
+    container_name: redis-sentinel-cluster-dev
+    privileged: true
+    restart: always
+    build: .
+    ports:
+      - '6379:6379'
+      - '6380:6380'
+      - '6381:6381'
+      - '26379:26379'
+      - '26380:26380'
+      - '26381:26381'
+    volumes:
+      - redis-sentinel-cluster-dev-data:/usr/local/redis
+    networks:
+     - redis-sentinel-cluster-dev-net
+    env_file:
+     - node1.env
+     - node2.env
+     - node3.env
+    stdin_open: true # -i interactive
+    tty: true # -t tty
+    #entrypoint: ["sh"] # 执行 sh
+networks:
+ redis-sentinel-cluster-dev-net:
+    driver: bridge
+volumes:
+  redis-sentinel-cluster-dev-data: 
+    driver: local-persist #docker本地数据持久化插件
+    driver_opts: 
+      mountpoint: /data/dockerData/redis/sentinel

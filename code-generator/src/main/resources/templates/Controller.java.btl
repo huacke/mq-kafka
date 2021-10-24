@@ -1,0 +1,75 @@
+package ${controllerPackageName};
+
+import java.util.List;
+import java.util.Map;
+import com.mq.common.response.ResultHandleT;
+import com.mq.common.entity.page.EntryPage;
+import ${servicePackageName}.${serviceClassName};
+import ${pojoPackageName}.${pojoClassName};
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
+
+
+/**
+ * ${tableComment} (${controllerClassName})
+ * @author：  ${author}
+ */
+<%if(tableComment != null &&  tableComment!= ""){%>
+@Api(tags="${tableComment}")
+<%}else{%>
+@Api(tags="${className}Api")
+<%}%>
+@RestController
+@RequestMapping("/${moduleName}/${objectName}")
+public class ${controllerClassName} {
+
+    @Autowired
+    private ${serviceClassName} ${serviceObjectClassName};
+
+    @ApiOperation(value = "新增记录", notes = "")
+    @PostMapping(value = "/create", produces = MediaType.APPLICATION_JSON_UTF8_VALUE,consumes=MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResultHandleT create(@RequestBody ${pojoClassName} rq) throws Exception {
+        return ResultHandleT.ok(${serviceObjectClassName}.createItem(rq));
+    }
+
+    @ApiOperation(value = "新增或更新记录", notes = "")
+    @PostMapping(value = "/saveOrUpate", produces = MediaType.APPLICATION_JSON_UTF8_VALUE,consumes=MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResultHandleT saveOrUpate(@RequestBody ${pojoClassName} rq) throws Exception {
+        return ResultHandleT.ok(${serviceObjectClassName}.insertOrUpdate(rq));
+    }
+
+    @ApiOperation(value = "逻辑删除", notes = "")
+    @PostMapping(value = "/remove", produces = MediaType.APPLICATION_JSON_UTF8_VALUE,consumes=MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResultHandleT remove(@RequestBody ${pojoClassName} rq) throws Exception {
+        return ResultHandleT.ok(${serviceObjectClassName}.updateById(rq));
+    }
+
+    @ApiOperation(value = "根据主键更新(非空字段更新)", notes = "")
+    @PostMapping(value = "/update", produces = MediaType.APPLICATION_JSON_UTF8_VALUE,consumes=MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResultHandleT update(@RequestBody ${pojoClassName} rq) throws Exception {
+        return ResultHandleT.ok(${serviceObjectClassName}.updateById(rq));
+    }
+
+    @ApiOperation(value = "根据主键查询", notes = "")
+    @GetMapping(value = "/retrieve", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResultHandleT retrieve(@RequestParam("${pk.fieldName}") ${pk.javaType} id) throws Exception {
+        return ResultHandleT.ok(${serviceObjectClassName}.retrieveItemById(id));
+    }
+
+    @ApiOperation(value = "根据map查询列表", notes = "")
+    @PostMapping(value = "/list", produces = MediaType.APPLICATION_JSON_UTF8_VALUE,consumes=MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResultHandleT list(@RequestBody Map<String, Object> params) throws Exception {
+        List<${pojoClassName}> resList = ${serviceObjectClassName}.retrieveListByMap(params);
+        return ResultHandleT.ok(resList);
+    }
+
+    @ApiOperation(value = "分页查询记录列表", notes = "")
+    @PostMapping(value = "/listPage", produces = MediaType.APPLICATION_JSON_UTF8_VALUE,consumes=MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResultHandleT listPage(@RequestBody EntryPage entryPage) throws Exception {
+        return ResultHandleT.ok(${serviceObjectClassName}.retrieveListByPage(entryPage));
+    }
+
+}

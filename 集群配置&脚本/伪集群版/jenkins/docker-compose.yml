@@ -1,0 +1,30 @@
+version: '3.2'
+
+services:
+  jenkins:
+    image: middleware/jenkins
+    container_name: jenkins
+    privileged: true
+    restart: always
+    build: .
+    ports:
+      - '8080:8080'
+    volumes:
+      - jenkins-data:/data/jenkins
+      - maven-repo-data:/data/maven-repo
+    networks:
+     - jenkins-net
+networks:
+  jenkins-net:
+    driver: bridge
+volumes:
+  jenkins-data: 
+    driver: local-persist #docker本地数据持久化插件
+    driver_opts: 
+      mountpoint: /data/dockerData/jenkins
+  maven-repo-data: 
+    driver: local-persist #docker本地数据持久化插件
+    driver_opts: 
+      mountpoint: /data/dockerData/maven-repo
+
+    

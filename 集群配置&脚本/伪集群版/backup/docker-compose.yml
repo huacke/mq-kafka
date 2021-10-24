@@ -1,0 +1,33 @@
+version: '3.2'
+
+services:
+  backup:
+    image: middleware/backup
+    container_name: backup
+    privileged: true
+    restart: always
+    build: .
+    ports:
+      - '20222:22'
+    volumes:
+      - backup-data:/data/backup
+    networks:
+     - backup-net
+    env_file:
+     - mysql-dump.env
+     - git-data-dump.env
+     - maven-data-dump.env
+     - jenkins-data-dump.env
+    #stdin_open: true # -i interactive
+    #tty: true # -t tty
+    #entrypoint: ["sh"] # 执行 sh
+networks:
+  backup-net:
+    driver: bridge
+volumes:
+  backup-data: 
+    driver: local-persist #docker本地数据持久化插件
+    driver_opts: 
+      mountpoint: /data/dockerData/backup
+
+    

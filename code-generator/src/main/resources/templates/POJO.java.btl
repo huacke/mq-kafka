@@ -1,0 +1,26 @@
+package ${pojoPackageName};
+
+import com.mq.common.entity.BaseObject;
+import lombok.Data;
+<%for(column in columns){%>
+<%if(column.javaType == 'BigDecimal'){%>
+import java.math.BigDecimal;
+<% break; }}%>
+<%for(column in columns){%>
+<%if(column.javaType == 'Date'){%>
+import java.util.Date;
+<% break;}}%>
+
+/**
+ * ${tableComment} (${pojoClassName})
+ * @author：  ${author}
+ */
+@Data
+public class ${pojoClassName} extends BaseObject{
+
+<%for(column in columns){%>
+   /** ${column.comments} */
+	private ${column.javaType} ${column.fieldName};
+<%}%>
+}
+

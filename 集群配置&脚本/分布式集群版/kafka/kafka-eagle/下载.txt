@@ -1,2 +1,2 @@
-https://codeload.github.com/smartloli/kafka-eagle-bin/tar.gz/v1.3.4
+https://codeload.github.com/smartloli/kafka-eagle-bin/tar.gz/v1.4.3
 github下载比较慢建议用vps下载

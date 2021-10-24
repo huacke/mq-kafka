@@ -1,0 +1,80 @@
+package ${serviceImplPackageName};
+
+import com.mq.common.entity.EntiytList;
+import com.mq.common.exception.BussinessException;
+import com.mq.common.entity.page.EntryPage;
+import ${pojoPackageName}.${pojoClassName};
+import ${iRepositoryPackageName}.${iRepositoryClassName};
+import ${servicePackageName}.${serviceClassName};
+import ${entityPackageName}.${entityClassName};
+import com.mq.common.utils.EntityUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.stereotype.Service;
+import org.springframework.context.annotation.Primary;
+import lombok.extern.slf4j.Slf4j;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * (${serviceImplClassName})
+ *
+ * @author：${author}
+ */
+@Slf4j
+@Service
+@Primary
+public class ${serviceImplClassName} implements ${serviceClassName} {
+
+    @Autowired
+    ${iRepositoryClassName} ${iRepositoryObjectName};
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ${pojoClassName} createItem(${pojoClassName} record) throws BussinessException {
+        ${entityClassName} et = EntityUtils.toEntryBean(record, ${entityClassName}.class);
+        ${entityClassName} rs = ${iRepositoryObjectName}.createItem(et);
+       return EntityUtils.toDtBean(rs, ${pojoClassName}.class);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ${pojoClassName} insertOrUpdate(${pojoClassName} record) throws BussinessException {
+        ${entityClassName} et = EntityUtils.toEntryBean(record, ${entityClassName}.class);
+        ${entityClassName} rs = ${iRepositoryObjectName}.insertOrUpdate(et);
+        return EntityUtils.toDtBean(rs, ${pojoClassName}.class);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public int updateById(${pojoClassName}  record) throws BussinessException {
+        ${entityClassName} et = EntityUtils.toEntryBean(record, ${entityClassName}.class);
+        return ${iRepositoryObjectName}.updateById(et);
+    }
+
+    @Override
+    public ${pojoClassName} retrieveItemById(${pk.javaType} id) throws BussinessException {
+        ${entityClassName}  et = ${iRepositoryObjectName}.retrieveItemById(id);
+        return EntityUtils.toDtBean(et, ${pojoClassName}.class);
+    }
+
+    @Override
+    public List<${pojoClassName}> retrieveListByMap(Map params) throws BussinessException {
+        List<${entityClassName}> ets = ${iRepositoryObjectName}.retrieveListByMap(params);
+        return EntityUtils.toDtListBean(ets, ${pojoClassName}.class);
+    }
+
+    @Override
+    public EntiytList<${pojoClassName}> retrieveListByPage(EntryPage page) throws BussinessException {
+        EntiytList entiytList = ${iRepositoryObjectName}.retrieveListByPage(page);
+        List<${entityClassName}> entitys = entiytList.getRows();
+        List<${pojoClassName}> dts = EntityUtils.toDtListBean(entitys, ${pojoClassName}.class);
+        if (null == dts) {
+            dts = new ArrayList<${pojoClassName}>();
+        }
+        entiytList.setRows(dts);
+        return entiytList;
+    }
+
+}

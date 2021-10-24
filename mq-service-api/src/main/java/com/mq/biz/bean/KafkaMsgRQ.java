@@ -1,7 +1,7 @@
 package com.mq.biz.bean;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.mq.entity.BaseObject;
+import com.mq.common.entity.BaseObject;
 import lombok.Data;
 import java.util.Date;
 

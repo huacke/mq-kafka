@@ -1,26 +1,28 @@
 package com.mq.consumer.kafka.worker;
 
 import com.mq.common.response.ResultHandleT;
-import com.mq.common.utils.ReflectionUtils;
 import com.mq.consumer.kafka.KafkaConsumerBuilder;
 import com.mq.consumer.kafka.KafkaConsumerManager;
 import com.mq.consumer.kafka.biz.bean.TopicGroup;
 import com.mq.consumer.kafka.handler.KafkaMessageConsumeWorkHandler;
+import com.mq.consumer.kafka.mgr.KafkaWorkerManager;
+import com.mq.consumer.kafka.util.KafkaConsumerUtil;
 import com.mq.msg.Message;
 import com.mq.msg.kafka.KafkaMessage;
 import com.mq.msg.kafka.TopicDef;
 import com.mq.utils.GsonHelper;
+import com.mq.utils.ReflectionUtils;
+import com.mq.utils.SpringUtils;
 import com.mq.utils.ThreadUtil;
 import com.mq.worker.AbstractMsgWorker;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationStartedEvent;
+import org.springframework.context.ApplicationListener;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
-import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -43,8 +45,9 @@ import java.util.stream.IntStream;
  *
  * @Description 默认消息处理器
  */
+@SuppressWarnings("ALL")
 @Slf4j
-public abstract class DefaultKafkaMsgWorker<R,T,M extends Message<T>> extends AbstractMsgWorker<R,M> implements InitializingBean, DisposableBean {
+public abstract class DefaultKafkaMsgWorker<R,T,M extends Message<T>> extends AbstractMsgWorker<R,M> implements ApplicationListener<ApplicationStartedEvent> {
 
     @Autowired
     private KafkaConsumerManager manager;
@@ -78,6 +81,9 @@ public abstract class DefaultKafkaMsgWorker<R,T,M extends Message<T>> extends Ab
     //消费线程总计
     private int totalConsumerSize =1;
 
+    //批量提交offset数量
+    private int batchCommitSize=1;
+
     //消息数据类型
     private Class<T>  msgDataTypeClasszz = ReflectionUtils.getSuperClassGenricType(this.getClass(),1);
 
@@ -89,9 +95,10 @@ public abstract class DefaultKafkaMsgWorker<R,T,M extends Message<T>> extends Ab
      * @param maxPollRecords 每次批量从kfaka poll最多能拉取消息的数量
      * @param pollIntervalTimeoutMillis 每次从kafka分区获取批量消息的处理超时时间
      * @param workerExecutetTimeOutMillis 工作线程执行超时时间
+     * @param batchCommitSize 批量提交offset数量
      * @param extConfMap 附加参数，可以自己定义消费者的配置参数
      **/
-    protected  void doConfigure(List<TopicGroup> topicGroups,int maxPollRecords,long pollIntervalTimeoutMillis, long workerExecutetTimeOutMillis, Map<String,Object> extConfMap){
+    protected  void doConfigure(List<TopicGroup> topicGroups,int maxPollRecords,long pollIntervalTimeoutMillis, long workerExecutetTimeOutMillis,int batchCommitSize, Map<String,Object> extConfMap){
 
         Optional.ofNullable(topicGroups).ifPresent(it -> {
             Map<TopicDef.Topic, List<TopicGroup>> topicMapping = topicGroups.stream().filter(i -> i.getTopic() != null && i.getGroup() != null).collect(Collectors.groupingBy(TopicGroup::getTopic));
@@ -117,17 +124,9 @@ public abstract class DefaultKafkaMsgWorker<R,T,M extends Message<T>> extends Ab
         this.pollIntervalTimeoutMillis = pollIntervalTimeoutMillis;
         this.workerExecutetTimeOutMillis = workerExecutetTimeOutMillis;
         this.maxPollRecords=maxPollRecords;
+        this.batchCommitSize=batchCommitSize;
         consumerConfMap.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG,this.maxPollRecords);
         consumerConfMap.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, (int)this.pollIntervalTimeoutMillis);
-    }
-
-    @Override
-    public  R onWork(M msg) {
-        return work(msg);
-    }
-
-    private  R work(M message) {
-        return doWork(message);
     }
 
     /**
@@ -155,20 +154,15 @@ public abstract class DefaultKafkaMsgWorker<R,T,M extends Message<T>> extends Ab
                     consumers.add(kafkaConsumer);
                     //设置运行状态
                     running.set(true);
+                    String groupId = KafkaConsumerUtil.getGroupId(kafkaConsumer);
                     //使用多线程消费数据，每个消费者对应一个线程
                     consumerExecutor.submit(new Callable<Void>() {
                         @Override
                         public Void call() throws Exception {
                             try {
-                                Field groupIdField = kafkaConsumer.getClass().getDeclaredField("groupId");
-                                if(groupIdField!=null){
-                                    groupIdField.setAccessible(true);
-                                    String groupId = (String)groupIdField.get(kafkaConsumer);
-                                    Thread currentThread = Thread.currentThread();
-                                    currentThread.setName(classSimpleName+"-ConsumerThreadPool-"+groupId+"-Consumer"+consumerThreadNum.addAndGet(1));
-                                }
+                                Thread.currentThread().setName(String.format("%s-ConsumerThreadPool-%s-Consumer-%s",classSimpleName,groupId,consumerThreadNum.addAndGet(1)));
                                 //开始启动消费者，消费数据
-                                manager.startup(Arrays.asList(new String[]{topic}), kafkaConsumer,running, new KafkaMessageConsumeWorkHandler<T,R>() {
+                                manager.startup(Arrays.asList(new String[]{topic}), kafkaConsumer,running, batchCommitSize,new KafkaMessageConsumeWorkHandler<T,R>() {
                                     @Override
                                     public ResultHandleT<R> doHandle(KafkaMessage message) {
                                         ResultHandleT<R> result =new ResultHandleT<>();
@@ -176,14 +170,8 @@ public abstract class DefaultKafkaMsgWorker<R,T,M extends Message<T>> extends Ab
                                             Future<ResultHandleT<R>> workFuture = workerExecutor.submit(new Callable<ResultHandleT<R>>() {
                                                 @Override
                                                 public ResultHandleT call() throws Exception {
+
                                                     ResultHandleT<R> resultHandleT= new ResultHandleT();
-                                                    Thread currentThread = Thread.currentThread();
-                                                    long threadId = currentThread.getId();
-                                                    String currentThreadName = currentThread.getName();
-                                                    String threadName = classSimpleName + "-WorkerThreadPool-" + threadId;
-                                                    if (!currentThreadName.equals(threadName)) {
-                                                        currentThread.setName(threadName);
-                                                    }
                                                     R excuteResult = null;
                                                     try {
                                                         T messageData = GsonHelper.fromJson(GsonHelper.toJson(message.getMsgData()), msgDataTypeClasszz);
@@ -230,7 +218,7 @@ public abstract class DefaultKafkaMsgWorker<R,T,M extends Message<T>> extends Ab
      **/
     private void initializeConsumerExecutor(int corePoolSize,int maxPoolSize,int keepAliveTimeSeconds) {
         if (null == consumerExecutor) {
-            consumerExecutor= createWorkExecutor(corePoolSize,maxPoolSize,keepAliveTimeSeconds,new LinkedBlockingQueue(maxPoolSize+4),10);
+            consumerExecutor= createWorkExecutor(corePoolSize,maxPoolSize,keepAliveTimeSeconds,new LinkedBlockingQueue(maxPoolSize+1),10,null);
         }
     }
 
@@ -241,7 +229,16 @@ public abstract class DefaultKafkaMsgWorker<R,T,M extends Message<T>> extends Ab
      **/
     private void initializeWorkerExecutorExecutor(int corePoolSize,int maxPoolSize,int keepAliveTimeSeconds) {
         if (null == workerExecutor) {
-            workerExecutor= createWorkExecutor(corePoolSize,maxPoolSize,keepAliveTimeSeconds,new LinkedBlockingQueue(20000),10);
+            ThreadFactory threadFactory = new ThreadFactory() {
+                @Override
+                public Thread newThread(Runnable r) {
+                    Thread thread = new Thread(r);
+                    String threadName = String.format("%s-WorkerThreadPool-", classSimpleName, thread.getId());
+                    thread.setName(threadName);
+                    return thread;
+                }
+            };
+            workerExecutor= createWorkExecutor(corePoolSize,maxPoolSize,keepAliveTimeSeconds,new LinkedBlockingQueue(20000),10,threadFactory);
         }
     }
 
@@ -249,20 +246,26 @@ public abstract class DefaultKafkaMsgWorker<R,T,M extends Message<T>> extends Ab
     /* *
      * @Description 创建线程池
      **/
-    private ExecutorService createWorkExecutor(int corePoolSize, int maxPoolSize, int keepAliveTimeSeconds, BlockingQueue blockingQueue,int priority) {
+    private ExecutorService createWorkExecutor(int corePoolSize, int maxPoolSize, int keepAliveTimeSeconds, BlockingQueue blockingQueue,int priority,ThreadFactory threadFactory) {
 
+        ThreadFactory createThreadFactory= new ThreadFactory() {
+            @Override
+            public Thread newThread(Runnable r) {
+                Thread thread = null;
+                if (null == threadFactory) {
+                    thread = new Thread(r);
+                } else {
+                    thread = threadFactory.newThread(r);
+                }
+                thread.setPriority(priority);
+                return thread;
+            }
+        };
         ExecutorService consumerExecutor = new ThreadPoolExecutor(corePoolSize,
                 maxPoolSize,
                 keepAliveTimeSeconds,
                 TimeUnit.SECONDS,
-                blockingQueue, new ThreadFactory() {
-            @Override
-            public Thread newThread(Runnable r) {
-                Thread thread = new Thread(r);
-                thread.setPriority(priority);
-                return thread;
-            }
-        }, new RejectedExecutionHandler() {
+                blockingQueue,createThreadFactory, new RejectedExecutionHandler() {
             @Override
             public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
                 //线程池任务队列满了之后，会执行此拒绝策略，此时会先先休眠一小段时间，然后再提交到任务队列重试
@@ -299,31 +302,34 @@ public abstract class DefaultKafkaMsgWorker<R,T,M extends Message<T>> extends Ab
         initCofing();
         //校验
         validate();
+        //注册worker到管理器
+        registerWorker();
         //初始化消费者线程执行器
         initializeConsumerExecutor(totalConsumerSize,totalConsumerSize,180);
         //初始化工作线程执行器
         initializeWorkerExecutorExecutor(ThreadUtil.getCpuPriorityThreadNum(null),ThreadUtil.getCpuPriorityThreadNum(null),180);
         //构造消费者实例，并启动
         buildAndStartConsumer();
+        System.out.println("");
     }
 
+    private void registerWorker(){
+        KafkaWorkerManager.register(SpringUtils.getBean(this.getClass()));
+    }
 
     private void releaseConsumers(){
-        try {
-            consumers.forEach(it -> {
-                try {
-                    it.wakeup();
-                } catch (Exception e) {
-                    log.error(String.format("%s 消费者wakeup出错，原因:", classSimpleName), e);
-                }
-            });
-        } catch (Exception e) {
-            log.error(String.format("%s 关闭消费者时出错，原因 : ", classSimpleName), e);
-        }
+ /*       consumers.forEach(it -> {
+            try {
+                it.wakeup();
+            } catch (Exception e) {
+                log.error(String.format("%s 消费者wakeup出错，原因:", classSimpleName), e);
+            }
+        });*/
     }
 
 
     private void releaseExecutor(ExecutorService executor,int type){
+        if(null==executor)return;
 
         String typeName ="";
         if(type==1){
@@ -405,17 +411,20 @@ public abstract class DefaultKafkaMsgWorker<R,T,M extends Message<T>> extends Ab
         log.info(String.format("%s 释放资源完毕！", classSimpleName));
     }
 
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        //bean 初始化时，进行资源初始化
-        init();
-    }
 
     @Override
-    public void destroy() throws Exception {
-        //bean 销毁时进行资源释放
+    public void onApplicationEvent(ApplicationStartedEvent event) {
+        //在容器启动成功时，进行资源初始化
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                init();
+            }
+        }).start();
+    }
+
+    public void stop() throws Exception {
         release();
     }
-
 
 }

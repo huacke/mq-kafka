@@ -9,17 +9,15 @@ import com.mq.biz.impl.KafkaMsgLogService;
 import com.mq.biz.impl.KafkaProcessMsgLogService;
 import com.mq.common.entity.EntiytList;
 import com.mq.common.entity.page.Page;
-import com.mq.common.response.ResultHandleT;
 import com.mq.common.utils.ConvertUtils;
 import com.mq.kafka.biz.api.KafkaMQService;
 import com.mq.kafka.producer.KafkaProducerManager;
-import com.mq.kafka.util.MsgHandleUtil;
-import com.mq.lock.redis.GlobalLock;
-import com.mq.lock.redis.GlobalLockRedisFactory;
 import com.mq.msg.enums.MsgStatus;
-import com.mq.msg.enums.SystemID;
+import com.mq.common.sys.SystemID;
 import com.mq.msg.kafka.KafkaMessage;
 import com.mq.redis.RedisKey;
+import com.mq.redis.lock.GlobalLock;
+import com.mq.redis.lock.GlobalLockRedisFactory;
 import com.mq.utils.GsonHelper;
 import com.mq.worker.AbstractWorker;
 import lombok.extern.slf4j.Slf4j;
@@ -31,13 +29,16 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StopWatch;
 import java.util.Date;
 import java.util.List;
 
 /**
  * @Description kafka消息补偿，消息日志同步定时任务
  **/
+@SuppressWarnings("ALL")
 @Component
 @Configuration
 @EnableScheduling
@@ -57,61 +58,76 @@ public class KakaMQMessageTask extends AbstractWorker<Void,Object> {
     @Autowired
     private KafkaMQService kafkaMQService;
 
-    @Scheduled(cron = "0 0/1 * * * ?")
+    @Scheduled(cron = "0/2 * * * * ?")
     public void work() {
         onWork(null);
     }
 
     @Override
     public Void onWork(Object data) {
+
         log.info("===========开始进行消息补偿任务========");
+
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
+
         //加分布式锁，控制多实例同时操作
         GlobalLock lock = globalLockRedisFactory.getLock(RedisKey.getKAFKA_MQ_MESSAGE_LOG_LOCK_KEY());
-        boolean acquire = lock.tryLock(500);
-        if (!acquire) {
-            log.info("===========已有实例在运行补偿任务，忽略此次任务========");
-            return null;
-        }
-        long begin =System.currentTimeMillis();
         try {
-            Page<KafkaProcessMsgLog> page = new Page<KafkaProcessMsgLog>(500);
+            boolean acquire = lock.tryLock(500);
+            if (!acquire) {
+                log.info("===========已有实例在运行补偿任务，忽略此次任务========");
+                return null;
+            }
+            Page<KafkaProcessMsgLog> page = new Page<KafkaProcessMsgLog>(1000);
             EntiytList<KafkaProcessMsgLog> mqMessageLogs = null;
             do {
+                if(Thread.currentThread().isInterrupted()){
+                    return null;
+                }
                 mqMessageLogs = queryKafkaProcessMsgLogs(page, null);
                 {
-                    if (mqMessageLogs != null && !ObjectUtils.isEmpty(mqMessageLogs.getRows())) {
-                        List<KafkaProcessMsgLog> rows = mqMessageLogs.getRows();
-                        rows.forEach(it -> {
-                            String onStatus = it.getStatus();
-                            try {
-                                if (MsgStatus.FAIL.getCode().equals(onStatus)
-                                        || MsgStatus.COMPENSATE.getCode().equals(onStatus)
-                                        || MsgStatus.READY.getCode().equals(onStatus)) {
-                                    if (shouldReSend(it)) {
-                                        doReSend(it);
-                                    }
-                                    if (checkMessageDeaded(it)) {
-                                        saveDeadedMessage(it);
-                                    }
-                                } else if (MsgStatus.DEAD.getCode().equals(onStatus)) {
-                                    saveDeadedMessage(it);
-                                } else if (MsgStatus.NORMAL.getCode().equals(onStatus)) {
-                                    processNormalMessage(it);
-                                }
-                            } catch (Exception e) {
-                                log.error("KakaMQMessageTask onWork error cause by :", e);
-                            }
-                        });
-                    }
+                    handeMsgLog(mqMessageLogs);
                 }
-                page.setPageNum(page.getPageNum()+1);
-            } while (mqMessageLogs!=null&&!ObjectUtils.isEmpty(mqMessageLogs.getRows()));
+                page.setPageNum(page.getPageNum() + 1);
+            } while (mqMessageLogs != null && !ObjectUtils.isEmpty(mqMessageLogs.getRows()));
         } finally {
             lock.unlock();
         }
-        long end =System.currentTimeMillis();
-        log.info(String.format("===========消息补偿任务结束，总共耗时 %s 秒：========",(double)((end-begin)/1000)));
+        stopWatch.stop();
+        log.info(String.format("===========消息补偿任务结束，总共耗时 %s ms：========", stopWatch.getTotalTimeMillis()));
         return null;
+    }
+
+    /**
+     * 消息遍历处理
+     * @param mqMessageLogs
+     */
+    private void handeMsgLog( EntiytList<KafkaProcessMsgLog> mqMessageLogs){
+        if (mqMessageLogs!=null&&!CollectionUtils.isEmpty(mqMessageLogs.getRows())) {
+            List<KafkaProcessMsgLog> rows = mqMessageLogs.getRows();
+            rows.forEach(it -> {
+                String onStatus = it.getStatus();
+                try {
+                    if (MsgStatus.FAIL.getCode().equals(onStatus)
+                            || MsgStatus.COMPENSATE.getCode().equals(onStatus)
+                            || MsgStatus.READY.getCode().equals(onStatus)) {
+                        if (shouldReSend(it)) {
+                            doReSend(it);
+                        }
+                        if (checkMessageDeaded(it)) {
+                            saveDeadedMessage(it);
+                        }
+                    } else if (MsgStatus.DEAD.getCode().equals(onStatus)) {
+                        saveDeadedMessage(it);
+                    } else if (MsgStatus.NORMAL.getCode().equals(onStatus)) {
+                        processNormalMessage(it);
+                    }
+                } catch (Exception e) {
+                    log.error("KakaMQMessageTask onWork error cause by :", e);
+                }
+            });
+        }
     }
 
     /**
@@ -134,8 +150,8 @@ public class KakaMQMessageTask extends AbstractWorker<Void,Object> {
         boolean deaded = false;
         String onStatus = kafkaMQProcessMessageLog.getStatus();
         Date createtime = kafkaMQProcessMessageLog.getCreatetime();
-        Date overtime = DateUtils.addMinutes(createtime, 120);
-        Date currentTime = new Date(System.currentTimeMillis());
+        Date overtime = DateUtils.addMinutes(createtime, 15);
+        Date currentTime = new Date();
         Integer retrytimes = kafkaMQProcessMessageLog.getRetrytimes();
         if (MsgStatus.NORMAL.getCode().equals(onStatus)) {
             return false;
@@ -164,15 +180,15 @@ public class KakaMQMessageTask extends AbstractWorker<Void,Object> {
         boolean shouldReSend = false;
         boolean deaded = checkMessageDeaded(kafkaMQProcessMessageLog);
         String onStatus = kafkaMQProcessMessageLog.getStatus();
-        if (MsgStatus.FAIL.getCode().equals(onStatus) || MsgStatus.COMPENSATE.getCode().equals(onStatus)) {
+        if (MsgStatus.FAIL.getCode().equals(onStatus)) {
             if (!deaded) {
                 shouldReSend = true;
             }
         } else if (MsgStatus.READY.getCode().equals(onStatus)) {
             Date createtime = kafkaMQProcessMessageLog.getCreatetime();
-            Date currentTime = new Date(System.currentTimeMillis());
+            Date currentTime = new Date();
             //待发送的消息，指定时间内未成功发送kafKa队列，消息重发
-            Date overtime = DateUtils.addSeconds(createtime, 8*60);
+            Date overtime = DateUtils.addSeconds(createtime, 6*60);
             if (!deaded && currentTime.after(overtime)) {
                 shouldReSend = true;
             }
@@ -191,8 +207,6 @@ public class KakaMQMessageTask extends AbstractWorker<Void,Object> {
         if (kafkaMessage != null) {
             Integer retrytimes = ConvertUtils.toInteger(kafkaMQProcessMessageLog.getRetrytimes(), 0).intValue();
             kafkaMQProcessMessageLog.setRetrytimes(++retrytimes);
-            ResultHandleT resultHandleT = null;
-            Throwable error = null;
             try {
                 //重发前再查询一下消息状态，如果是已发送，直接返回
                 KafkaProcessMsgLog currentKafkaProcessMsgLog = kafkaProcessMsgLogService.findById(kafkaMQProcessMessageLog.getId());
@@ -201,34 +215,19 @@ public class KakaMQMessageTask extends AbstractWorker<Void,Object> {
                     if (MsgStatus.NORMAL.getCode().equals(status)) {
                         return false;
                     }
+                    try {
+                        kafkaMQProcessMessageLog.setStatus(MsgStatus.COMPENSATE.getCode());
+                        kafkaMQProcessMessageLog.setUpdateTime(new Date());
+                        kafkaProcessMsgLogService.saveLog(kafkaMQProcessMessageLog);
+                    } catch (Exception e) {
+                        log.error("doResend KafkaMQMessage save kafkaMQProcessMessageLog error cause by :", e);
+                    }
+                    kafkaMessage.setStatus(MsgStatus.COMPENSATE.getCode());
+                    kafkaMessage.getHeader().setSourceSystem(SystemID.MQ_SERVICE.name());
+                    kafkaMQService.compensateSendMQ(kafkaMessage);
                 }
-                kafkaMessage.setStatus(MsgStatus.COMPENSATE.getCode());
-                kafkaMessage.getHeader().setSourceSystem(SystemID.MQ_SERVICE.name());
-                resultHandleT = kafkaMQService.compensateSendMQ(kafkaMessage);
             } catch (Exception e) {
                 log.error("doResend KafkaMQMessage error cause by :", e);
-            }
-            boolean faild = MsgHandleUtil.checkSendMessageFail(resultHandleT, error);
-            if (faild) {
-                sucessFlag = false;
-                kafkaMQProcessMessageLog.setStatus(MsgStatus.FAIL.getCode());
-            }
-            //发送完消息后重新检查消息状态
-            boolean isDeaded = checkMessageDeaded(kafkaMQProcessMessageLog);
-            String onStatus = kafkaMQProcessMessageLog.getStatus();
-            if (isDeaded) {
-                //标记死亡
-                kafkaMQProcessMessageLog.setStatus(MsgStatus.DEAD.getCode());
-                kafkaMQProcessMessageLog.setDeaded(1);
-            } else if (!MsgStatus.FAIL.getCode().equals(onStatus)&&!MsgStatus.NORMAL.getCode().equals(onStatus)) {
-                //如果不是死亡和失败状态，则标记为补偿状态
-                kafkaMQProcessMessageLog.setStatus(MsgStatus.COMPENSATE.getCode());
-            }
-            try {
-                kafkaMQProcessMessageLog.setUpdateTime(new Date());
-                kafkaProcessMsgLogService.saveLog(kafkaMQProcessMessageLog);
-            } catch (Exception e) {
-                log.error("doResend KafkaMQMessage save kafkaMQProcessMessageLog error cause by :", e);
             }
         }
         return sucessFlag;

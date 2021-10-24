@@ -45,6 +45,10 @@
 					<groupId>com.google.guava</groupId>
 					<artifactId>guava</artifactId>
 				</exclusion>
+				<exclusion>
+					<artifactId>commons-configuration</artifactId>
+					<groupId>commons-configuration</groupId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -79,6 +83,10 @@
 					<groupId>com.google.guava</groupId>
 					<artifactId>guava</artifactId>
 				</exclusion>
+				<exclusion>
+					<artifactId>HdrHistogram</artifactId>
+					<groupId>org.hdrhistogram</groupId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -90,6 +98,10 @@
             <groupId>com.mq</groupId>
             <artifactId>mq-consumer</artifactId>
         </dependency>
+		<dependency>
+			<groupId>com.mq</groupId>
+			<artifactId>mq-bootstrap</artifactId>
+		</dependency>
 	</dependencies>
 	<build>
 		<finalName>${project.artifactId}</finalName>

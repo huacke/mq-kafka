@@ -17,7 +17,15 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.mq</groupId>
-			<artifactId>mq-common</artifactId>
+			<artifactId>mq-queue-integration</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.mq</groupId>
+			<artifactId>mq-bootstrap</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.mq</groupId>
+			<artifactId>mq-mongo-integration</artifactId>
 		</dependency>
 	</dependencies>
 </project>

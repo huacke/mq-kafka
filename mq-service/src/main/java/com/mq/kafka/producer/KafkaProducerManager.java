@@ -11,7 +11,6 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.errors.TimeoutException;
-import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -32,7 +31,7 @@ import java.util.stream.IntStream;
  * @Description Kafka生产者管理器
  */
 @Component
-public class KafkaProducerManager implements InitializingBean, DisposableBean {
+public class KafkaProducerManager implements InitializingBean {
 
 	@Autowired
 	KafkaProducerBuilder kafkaProducerBuilder;
@@ -121,11 +120,6 @@ public class KafkaProducerManager implements InitializingBean, DisposableBean {
 			throw e;
 		}
 		log.info("构建KafkaMQ消息生产者实例完毕！！！！！");
-	}
-
-	@Override
-	public void destroy() throws Exception {
-		shutdown();
 	}
 
 	@Override

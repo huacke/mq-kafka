@@ -1,0 +1,72 @@
+package ${iRepositoryPackageName};
+
+import com.mq.data.base.IBaseRepository;
+import ${entityPackageName}.${entityClassName};
+import ${examplePackageName}.${exampleClassName};
+import java.util.List;
+import com.mq.common.exception.BussinessException;
+import org.apache.ibatis.annotations.Param;
+
+/**
+ *
+ * ${tableComment} (${iRepositoryClassName})
+ * @author：  ${author}
+ */
+public interface ${iRepositoryClassName} extends IBaseRepository<${entityClassName}>{
+
+      /**
+        * 删除
+        *
+        * @return int 影响记录条数
+        * @throws Exception
+        */
+       int deleteByExample(${exampleClassName} example)throws BussinessException;
+
+       /**
+        * 修改(策略修改)
+        *
+        * @param example
+        * @return int 影响记录条数
+        * @throws Exception
+        */
+       int updateByExample(${entityClassName} record, ${exampleClassName} example)throws BussinessException;
+
+       /**
+        * 修改(所有字段)
+        *
+        * @param example
+        * @return int 影响记录条数
+        * @throws Exception
+        */
+       int updateAllColumnByExample(${entityClassName} record, ${exampleClassName} example)throws BussinessException;
+
+       /**
+        * 根据条件查询是否存在
+        * @param example
+        * @throws Exception
+        */
+       boolean existsByExample(${exampleClassName} example)throws BussinessException;
+       /**
+        * 多条件查询
+        *
+        * @param example
+        * @return
+        * @throws Exception
+        */
+       List<${entityClassName}> retrieveListByExample(${exampleClassName} example) throws BussinessException;
+
+       /**
+        * 条件查询返回一条数据
+        * @param example
+        * @return
+        * @throws Exception
+        */
+       ${entityClassName} retrieveOneItemByExample(${exampleClassName} example) throws BussinessException;
+       /**
+        * 通过条件查询条数
+        * @param example
+        * @return
+        */
+       int countByExample(${exampleClassName} example)throws BussinessException;
+
+}

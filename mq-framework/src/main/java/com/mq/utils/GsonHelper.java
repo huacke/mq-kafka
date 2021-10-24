@@ -4,6 +4,7 @@ package com.mq.utils;
 import com.google.gson.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateUtils;
+
 import java.lang.reflect.Type;
 import java.text.DateFormat;
 import java.util.Date;
@@ -18,8 +19,8 @@ public class GsonHelper
             .disableHtmlEscaping()
             .registerTypeAdapter(Map.class, new MapTypeAdapter())
             //.addSerializationExclusionStrategy(new IgnoreStrategy());
-            .registerTypeAdapter(java.util.Date.class, new DateSerializer()).setDateFormat(DateFormat.LONG)
-            .registerTypeAdapter(java.util.Date.class, new DateDeserializer()).setDateFormat(DateFormat.LONG)
+            .registerTypeAdapter(Date.class, new DateSerializer()).setDateFormat(DateFormat.LONG)
+            .registerTypeAdapter(Date.class, new DateDeserializer()).setDateFormat(DateFormat.LONG)
             .create();
 
 
@@ -64,7 +65,7 @@ public class GsonHelper
             JsonPrimitive js = json.getAsJsonPrimitive();
             try{
                 if(js.isNumber()){
-                    return new java.util.Date(js.getAsLong());
+                    return new Date(js.getAsLong());
                 }else if(js.isString()){
                    return DateUtils.parseDate(json.getAsJsonPrimitive().getAsString(), "yyyy-MM-dd HH:mm:ss");
                 }

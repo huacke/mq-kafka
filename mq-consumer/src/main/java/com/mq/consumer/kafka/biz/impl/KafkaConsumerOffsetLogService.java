@@ -1,9 +1,9 @@
 package com.mq.consumer.kafka.biz.impl;
 
-import com.mq.mongo.dao.BaseMongoDao;
 import com.mq.mongo.service.impl.BaseMongoService;
 import com.mq.consumer.kafka.biz.bean.KafkaConsumerOffsetLog;
 import com.mq.consumer.kafka.dao.KafkaConsumerOffsetLogDao;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
@@ -14,15 +14,13 @@ import java.util.Date;
  * @ClassName KafkaConsumerOffsetLogService
  * @Description kafka消费者消费偏移量
  */
+@Slf4j
 @Service
 @Primary
-public class KafkaConsumerOffsetLogService extends BaseMongoService<KafkaConsumerOffsetLog,String>{
+public class KafkaConsumerOffsetLogService extends BaseMongoService<KafkaConsumerOffsetLog,KafkaConsumerOffsetLogDao,String>{
+
     @Autowired
     private KafkaConsumerOffsetLogDao kafkaConsumerOffsetLogDao;
-    @Override
-    protected BaseMongoDao populateDao() {
-        return kafkaConsumerOffsetLogDao;
-    }
     /**
      * @Description 保存日志
      * @param  kafkaConsumerOffsetLog
@@ -59,9 +57,24 @@ public class KafkaConsumerOffsetLogService extends BaseMongoService<KafkaConsume
         kafkaConsumerOffsetLog.setGroupId(groupId);
         kafkaConsumerOffsetLog.setPartition(partition);
         kafkaConsumerOffsetLog.setOffset(offset);
-        kafkaConsumerOffsetLog.setState("1");
         kafkaConsumerOffsetLog.setCreatetime(new Date());
         kafkaConsumerOffsetLog.setUpdateTime(kafkaConsumerOffsetLog.getCreatetime());
         return kafkaConsumerOffsetLog;
+    }
+
+    private byte[] kafkaConsumerOffsetLogLock = new byte[0];
+    /**
+     * @Description 保存消费偏移量日志
+     **/
+    public   boolean  saveKafkaConsumerOffsetLog(KafkaConsumerOffsetLog kafkaConsumerOffsetLog){
+        try {
+            synchronized (kafkaConsumerOffsetLogLock){
+                return saveLog(kafkaConsumerOffsetLog);
+            }
+        }
+        catch (Exception e){
+            log.error("saveKafkaConsumerOffsetLog error cause by: ", e);
+        }
+        return false;
     }
 }

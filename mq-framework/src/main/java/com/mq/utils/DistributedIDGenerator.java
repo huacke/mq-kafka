@@ -2,6 +2,7 @@ package com.mq.utils;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;

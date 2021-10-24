@@ -1,6 +1,6 @@
 package com.mq.biz.bean;
 
-import com.mq.entity.BaseObject;
+import com.mq.common.entity.BaseObject;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -86,17 +86,9 @@ public class KafkaRequestLog extends BaseObject {
      */
     private Date requestTime;
     /**
-     * 响应时间
-     */
-    private Date responseTime;
-    /**
      * 花费时间
      */
     private Integer costTime;
-    /**
-     * 创建人
-     */
-    private String createId;
     /**
      * 创建时间
      */

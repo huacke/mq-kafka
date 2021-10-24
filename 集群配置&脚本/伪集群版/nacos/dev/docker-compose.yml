@@ -1,0 +1,30 @@
+version: '3.2'
+
+services:
+  nacos-cluster-dev:
+    image: middleware/nacos-cluster-dev
+    container_name: nacos-cluster-dev
+    privileged: true
+    restart: always
+    build: .
+    ports:
+      - '8848:8848'
+      - '8849:8849'
+      - '8850:8850'
+    volumes:
+      - nacos-cluster-dev-data:/usr/local/nacos
+    network_mode: host
+    env_file:
+     - env/node1.env
+     - env/node2.env
+     - env/node3.env
+     - env/node-common.env
+    #stdin_open: true # -i interactive
+    #tty: true # -t tty
+    #entrypoint: ["sh"] # 执行 sh    
+volumes:
+  nacos-cluster-dev-data: 
+    driver: local-persist #docker本地数据持久化插件
+    driver_opts: 
+      mountpoint: /data/dockerData/nacos/dev
+    

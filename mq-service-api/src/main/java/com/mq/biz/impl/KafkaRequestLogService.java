@@ -1,6 +1,5 @@
 package com.mq.biz.impl;
 
-import com.mq.mongo.dao.BaseMongoDao;
 import com.mq.mongo.service.impl.BaseMongoService;
 import com.mq.biz.bean.KafkaRequestLog;
 import com.mq.mongo.dao.KafkaRequestLogDao;
@@ -15,13 +14,10 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @Primary
-public class KafkaRequestLogService extends BaseMongoService<KafkaRequestLog,String>{
+public class KafkaRequestLogService extends BaseMongoService<KafkaRequestLog,KafkaRequestLogDao,String>{
+
     @Autowired
     private KafkaRequestLogDao kafkaRequestLogDao;
-    @Override
-    protected BaseMongoDao populateDao() {
-        return kafkaRequestLogDao;
-    }
     /**
      * @Description 保存日志
      * @param  requestLog

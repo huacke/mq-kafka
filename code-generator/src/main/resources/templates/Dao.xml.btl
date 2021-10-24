@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="${daoPackageName}.${daoClassName}">
+    <resultMap id="BaseResultMap" type="${entityPackageName}.${entityClassName}" extends="${mapperPackageName}.${mapperClassName}.BaseResultMap">
+    </resultMap>
+    <resultMap id="ExtBaseResultMap" type="${pojoPackageName}.${pojoClassName}" extends="${daoPackageName}.${daoClassName}.BaseResultMap">
+    </resultMap>
+
+    <sql id="Base_Column_List">
+          <include refid="${mapperPackageName}.${mapperClassName}.Base_Column_List"/>
+    </sql>
+</mapper>

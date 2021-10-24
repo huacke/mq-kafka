@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>代码生成器</title>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+<link rel="stylesheet" href="css/bootstrap.min.css">
+<link rel="stylesheet" href="css/font-awesome.min.css">
+<link rel="stylesheet" href="plugins/jqgrid/ui.jqgrid-bootstrap.css">
+<link rel="stylesheet" href="css/main.css">
+<!-- 引入样式 -->
+<link rel="stylesheet" href="plugins/element-ui/lib/theme-chalk/index.css">
+
+<script src="libs/jquery.min.js"></script>
+<script src="plugins/layer/layer.js"></script>
+<script src="libs/bootstrap.min.js"></script>
+<script src="libs/vue.min.js"></script>
+<!-- 引入组件库 -->
+<script src="plugins/element-ui/lib/index.js"></script>
+<script src="plugins/jqgrid/grid.locale-cn.js"></script>
+<script src="plugins/jqgrid/jquery.jqGrid.min.js"></script>
+<script src="js/common.js"></script>
+</head>
+<body>
+<el-container  id="hqapp" >
+	<el-container v-show="showList">
+		<el-header>
+			<el-form ref="searchForm" :model="q"  class="searchForm" :inline="true" label-width="80px">
+				<el-form-item label="数据库">
+					<el-select  v-model="q.schemaName" placeholder="请选择"  @change="query"  @keyup.enter="query" >
+						<el-option
+								v-for="item in databases"
+								:key="item.schemaName"
+								:label="item.schemaName"
+								:value="item.schemaName">
+						</el-option>
+					</el-select>
+				</el-form-item>
+				<el-form-item label="表名称">
+					<el-input  v-model="q.tableName" @keyup.enter="query" placeholder="表名称"></el-input>
+				</el-form-item>
+				<el-form-item >
+					<el-button size="small" type="default"  @click="query">查询</el-button>
+					<el-button size="small" type="primary" @click="configGen">生成代码</el-button>
+				</el-form-item>
+			</el-form>
+		</el-header>
+		<el-main>
+			<table id="jqGrid"></table>
+			<div id="jqGridPager"></div>
+		</el-main>
+	</el-container>
+	<el-container v-show="!showList">
+		<el-form ref="optionForm" :model="generateModel" :rules="fieldRules" class="optionForm" :inline="true" label-width="100px" size="medium">
+			<el-form-item label="待生成表">
+				<el-col v-for="(item,index) in tables" :key="item" :span="6">
+					<el-tag size="mini">{{item}}</el-tag>
+				</el-col>
+			</el-form-item>
+			<el-form-item label="基础包路径："  >
+				<el-input  v-model="generateModel.basePackage"
+						  placeholder="基础包路径,如：com.data">
+				</el-input>
+			</el-form-item>
+			<el-form-item label="模块："  >
+				<el-input v-model="generateModel.moduleName"
+						  placeholder="生成代码的所属模块,如：order,good,stock">
+				</el-input>
+			</el-form-item>
+			<el-form-item>
+				<el-button size="small" type="primary"  @click="generator">确定</el-button>
+				<el-button size="small" type="warning" @click="reload">返回</el-button>
+			</el-form-item>
+		</el-form>
+
+	</el-container>
+</el-container>
+<script src="js/generator.js"></script>
+</body>
+</html>

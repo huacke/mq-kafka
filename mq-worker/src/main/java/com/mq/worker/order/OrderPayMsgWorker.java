@@ -10,7 +10,9 @@ import com.mq.utils.GsonHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author huacke
@@ -26,11 +28,11 @@ public class OrderPayMsgWorker extends DefaultKafkaMsgWorker<Void, String,KafkaM
 
         List<TopicGroup> topicGroups = new ArrayList<TopicGroup>();
         topicGroups.add(new TopicGroup(TopicDef.Topic.PAY, TopicDef.Group.PAYED_PROCESS, 3));
-
         doConfigure(topicGroups,
                 1000,
                 600 * 1000l,
                 15 * 1000l,
+                50,
                 null);
     }
 

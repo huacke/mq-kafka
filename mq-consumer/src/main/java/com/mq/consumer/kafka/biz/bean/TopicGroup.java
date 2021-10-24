@@ -1,6 +1,6 @@
 package com.mq.consumer.kafka.biz.bean;
 
-import com.mq.entity.BaseObject;
+import com.mq.common.entity.BaseObject;
 import com.mq.msg.kafka.TopicDef;
 import lombok.Data;
 /**

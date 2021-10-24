@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.data.dao.MysqlGeneratorDao">
+	<select id="queryList" resultType="map">
+		select table_name tableName, engine, table_comment tableComment, create_time createTime from information_schema.tables
+		where table_schema = #{schemaName}
+		<if test="tableName != null and tableName.trim() != ''">
+			and table_name like concat('%', #{tableName}, '%')
+		</if>
+		order by create_time desc
+	</select>
+
+	<select id="queryTable" resultType="map">
+		select table_name tableName, engine, table_comment tableComment, create_time createTime from information_schema.tables
+		where table_schema =#{schemaName} and table_name = #{tableName}
+		ORDER BY create_time DESC, table_name desc, table_type asc
+	</select>
+
+	<select id="queryColumns" resultType="map">
+		select
+		column_name columnName, data_type dataType, column_comment columnComment, column_key columnKey,extra ,
+		table_name tableName,character_maximum_length dataLength,numeric_precision dataPrecision,numeric_scale dataScale,
+		is_nullable nullable,column_default default_value
+		from information_schema.columns
+ 		where table_name = #{tableName} and table_schema = #{schemaName} order by ordinal_position
+	</select>
+
+
+	<select id="queryDatabases" resultType="map">
+		 SELECT schema_name schemaName FROM information_schema.SCHEMATA
+		 WHERE SCHEMATA.SCHEMA_NAME NOT IN ('mysql','information_schema','performance_schema')
+		 ORDER BY SCHEMATA.SCHEMA_NAME
+	</select>
+
+	<select id="queryPrimarykey" resultType="map">
+		SELECT
+			t.constraint_name CONSTRAINT_NAME,
+			t.table_name TABLE_NAME,
+			c.column_name COLUMN_NAME
+		FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS AS t,
+			 INFORMATION_SCHEMA.KEY_COLUMN_USAGE AS c
+		WHERE t.table_schema = c.table_schema
+			AND t.table_name = c.table_name
+			AND t.constraint_name = c.constraint_name
+			AND t.constraint_type = 'PRIMARY KEY'
+			AND t.table_schema = #{schemaName}
+			AND t.table_name = #{tableName}
+		ORDER BY t.constraint_name
+	</select>
+	<select id="queryForeignKey" resultType="map">
+		SELECT
+			kcu.constraint_name FK_NAME,
+			kcu.table_name PK_TABLE_NAME,
+			kcu.column_name PK_COLUMN_NAME,
+			kcu.referenced_table_name FK_TABLE_NAME,
+			kcu.referenced_column_name FK_COLUMN_NAME
+		FROM information_schema.key_column_usage kcu
+		WHERE table_schema = #{schemaName}
+			AND table_name = #{tableName}
+			AND constraint_name in (
+				SELECT constraint_name
+				FROM information_schema.table_constraints tc
+				WHERE tc.table_schema = kcu.table_schema
+					AND tc.table_name = kcu.table_name
+					AND tc.constraint_type = 'FOREIGN KEY')
+		ORDER BY ORDINAL_POSITION
+	</select>
+	<select id="queryIndex" resultType="map">
+		SELECT
+    		index_name INDEX_NAME,
+    		index_type INDEX_TYPE,
+    		table_name TABLE_NAME,
+    		column_name COLUMN_NAME,
+    		non_unique NON_UNIQUE
+		FROM information_schema.statistics
+		WHERE table_schema =  #{schemaName}
+			AND table_name = #{tableName}
+		ORDER BY index_name
+	</select>
+	<select id="queryTrigger" resultType="map">
+		SELECT
+			trigger_name TRIGGER_NAME,
+			action_timing TRIGGER_TYPE,
+			event_manipulation EVENT_TYPE,
+			action_statement TRIGGER_BODY
+		FROM information_schema
+		WHERE table_schema =  #{schemaName}
+		AND table_name = #{tableName}
+	</select>
+</mapper>

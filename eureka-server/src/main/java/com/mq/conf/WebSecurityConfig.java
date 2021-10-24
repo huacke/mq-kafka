@@ -13,6 +13,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         super.configure(http);
         //关闭Eureka crsf安全校验
         http.csrf().disable();
-        http.authorizeRequests().anyRequest().authenticated().and().httpBasic();
+        //http.authorizeRequests().anyRequest().authenticated().and().httpBasic();
     }
 }

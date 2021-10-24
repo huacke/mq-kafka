@@ -1,15 +1,15 @@
 package com.mq.consumer.kafka.partition;
 
-import com.mq.common.utils.SpringUtils;
-import com.mq.consumer.kafka.KafkaConsumerManager;
 import com.mq.consumer.kafka.biz.bean.KafkaConsumerOffsetLog;
 import com.mq.consumer.kafka.biz.impl.KafkaConsumerOffsetLogService;
 import com.mq.consumer.kafka.util.KafkaConsumerUtil;
+import com.mq.utils.SpringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
+import org.springframework.util.CollectionUtils;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,6 +20,7 @@ import java.util.Map;
  * @ClassName HandleRebalance
  * @Description 分区再均衡处理器
  */
+@SuppressWarnings("ALL")
 @Slf4j
 public class HandleRebalance implements ConsumerRebalanceListener {
 
@@ -27,11 +28,11 @@ public class HandleRebalance implements ConsumerRebalanceListener {
 
     private KafkaConsumer consumer;
 
-    private Thread thread;
+    private Map<TopicPartition, OffsetAndMetadata> currentOffsets;
 
-    public HandleRebalance(KafkaConsumer consumer,Thread thread) {
+    public HandleRebalance(KafkaConsumer consumer,Map<TopicPartition, OffsetAndMetadata> currentOffsets) {
         this.consumer = consumer;
-        this.thread =thread;
+        this.currentOffsets=currentOffsets;
     }
 
     @Override
@@ -46,13 +47,23 @@ public class HandleRebalance implements ConsumerRebalanceListener {
         partitions.forEach((topicPartition) -> {
             String topic = topicPartition.topic();
             int partition = topicPartition.partition();
-            OffsetAndMetadata committedOffset = consumer.committed(topicPartition);
-            if(committedOffset!=null){
+            KafkaConsumerOffsetLog dbOffsetLog = queryDbOffset(topic, partition, groupId);
+            Long offset=null;
+            if(dbOffsetLog!=null){
+                offset=dbOffsetLog.getOffset();
+            }
+            if(null==offset){
+                OffsetAndMetadata committedOffset = consumer.committed(topicPartition);
+                if(committedOffset!=null){
+                    offset=committedOffset.offset();
+                }
+            }
+            if(offset!=null){
                 try{
-                    consumer.seek(topicPartition,committedOffset.offset());
-                    log.info(String.format("主题：%s,分区：%s,消费组： %s,重新平衡成功，当前偏移量为：%s  ",topic,partition,groupId,committedOffset.offset()));
+                    consumer.seek(topicPartition,offset);
+                    log.info(String.format("主题：%s,分区：%s,消费组： %s,重新平衡成功，当前偏移量为：%s  ",topic,partition,groupId,offset));
                 }catch (Exception e){
-                    log.error(String.format("主题：%s,分区：%s,消费组： %s,重新平衡成功，当前偏移量为：%s ，重置本地偏移量时出错,原因: ",topic,partition,groupId,committedOffset.offset()),e);
+                    log.error(String.format("主题：%s,分区：%s,消费组： %s,重新平衡成功，当前偏移量为：%s ，重置本地偏移量时出错,原因: ",topic,partition,groupId,offset),e);
                 }
             }
         });
@@ -62,8 +73,9 @@ public class HandleRebalance implements ConsumerRebalanceListener {
 
 
     private void commitOffset(Collection<TopicPartition> partitions) {
+        if (CollectionUtils.isEmpty(currentOffsets)) { return; }
         String groupId  = KafkaConsumerUtil.getGroupId(consumer);;
-        Map<TopicPartition, OffsetAndMetadata> topicPartitionOffsetMap = KafkaConsumerManager.currentOffsetHolder.get();
+        Map<TopicPartition, OffsetAndMetadata> topicPartitionOffsetMap = currentOffsets;
         Map<TopicPartition, OffsetAndMetadata> offsetAndMetadataMap = new HashMap<>();
         partitions.forEach((topicPartition) -> {
             String topic = topicPartition.topic();
@@ -75,24 +87,37 @@ public class HandleRebalance implements ConsumerRebalanceListener {
                 try {
                     consumer.commitSync(offsetAndMetadataMap);
                     offsetAndMetadataMap.remove(topicPartition);
+                    topicPartitionOffsetMap.remove(topicPartition);
                     KafkaConsumerOffsetLog kafkaConsumerOffsetLog = kafkaConsumerOffsetLogService.buildKafkaConsumerOffsetLog(topic, partition, groupId, offset);
                     saveKafkaConsumerOffsetLog(kafkaConsumerOffsetLog);
                     log.info(String.format("消费分区再均衡，提交偏移量到kafka成功  ===》 topic:%s,partition:%s,offset:%s ", topic, partition, offset));
                 } catch (Exception e) {
                     log.error(String.format("消费分区再均衡，提交偏移量到kafka出错 ===》 topic:%s,partition:%s,offset:%s ，原因:  ", topic, partition, offset), e);
                 }
-                topicPartitionOffsetMap.remove(topicPartition);
             }
         });
-        topicPartitionOffsetMap.clear();
-
     }
+
+
+    /**
+     * @Description 查询消费偏移量日志
+     **/
+    private KafkaConsumerOffsetLog queryDbOffset(String topic, Integer partition, String groupId) {
+        try {
+            return  kafkaConsumerOffsetLogService.queryKafkaConsumerOffsetLog(topic,partition,groupId);
+        } catch (Exception e) {
+            log.error("消费分区再均衡，查询消费偏移量日志出错 : ", e);
+        }
+        return null;
+    }
+
+
     /**
      * @Description 保存消费偏移量日志
      **/
     private boolean saveKafkaConsumerOffsetLog(KafkaConsumerOffsetLog kafkaConsumerOffsetLog) {
         try {
-           return  kafkaConsumerOffsetLogService.saveLog(kafkaConsumerOffsetLog);
+            return  kafkaConsumerOffsetLogService.saveLog(kafkaConsumerOffsetLog);
         } catch (Exception e) {
             log.error("消费分区再均衡，保存消费偏移量日志出错 : ", e);
         }

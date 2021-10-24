@@ -14,22 +14,16 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @Primary
-public class KafkaDeadedMsgLogService extends BaseMongoService<KafkaDeadedMsgLog,String>{
+public class KafkaDeadedMsgLogService extends BaseMongoService<KafkaDeadedMsgLog,KafkaDeadedMsgLogDao,String>{
 
     @Autowired
     private KafkaDeadedMsgLogDao kafkaDeadedMsgLogDao;
 
-    @Override
-    protected BaseMongoDao populateDao() {
-        return kafkaDeadedMsgLogDao;
-    }
     /**
      * @Description 保存日志
      * @param  kafkaDeadedMsgLog
      **/
     public boolean saveLog(KafkaDeadedMsgLog kafkaDeadedMsgLog){
-        Integer version = kafkaDeadedMsgLog.getVersion();
-        kafkaDeadedMsgLog.setVersion(++version);
         return save(kafkaDeadedMsgLog)!=null;
     }
 

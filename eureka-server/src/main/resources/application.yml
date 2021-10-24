@@ -25,6 +25,7 @@ logging:
   path: logs/
   level:
     org.springframework.boot.autoconfigure: ERROR
+    com.netflix.eureka.registry.AbstractInstanceRegistry: ERROR
 
 
 eureka:

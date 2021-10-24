@@ -27,7 +27,7 @@ public class EurekaServer extends SpringBootServletInitializer {
             public void run() {
                 synchronized (EurekaServer.class) {
                     try {
-                        ((ConfigurableApplicationContext) applicationContext).stop();
+                        ((ConfigurableApplicationContext) applicationContext).close();
                     } catch (Exception e) {
                         log.error("EurekaServer停止时发生错误!", e);
                     }
@@ -57,7 +57,7 @@ public class EurekaServer extends SpringBootServletInitializer {
 
 
     public static void main(String[] args) {
-        final ApplicationContext applicationContext = new SpringApplicationBuilder(EurekaServer.class).web(WebApplicationType.SERVLET).bannerMode(Banner.Mode.OFF).run(args);
+        final ApplicationContext applicationContext = new SpringApplicationBuilder(EurekaServer.class).web(WebApplicationType.SERVLET).bannerMode(Banner.Mode.OFF).registerShutdownHook(false).run(args);
         keepRunning(applicationContext, args);
 
     }

@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<settings xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">  
+  <localRepository>/data/maven-repo</localRepository>  
+  <servers> 
+    <server> 
+      <id>snapshots</id>  
+      <username>admin</username>  
+      <password>admin123</password> 
+    </server>  
+    <server> 
+      <id>releases</id>  
+      <username>admin</username>  
+      <password>admin123</password> 
+    </server>  
+    <server> 
+      <id>nexus</id>  
+      <username>admin</username>  
+      <password>admin123</password> 
+    </server>  
+    <server> 
+      <id>tomcat</id>  
+      <username>tomcat</username>  
+      <password>tomcat</password> 
+    </server> 
+  </servers>  
+  <mirrors> 
+    <mirror> 
+      <id>alimaven</id>  
+      <name>aliyun maven</name>  
+      <url>http://maven.aliyun.com/nexus/content/groups/public/</url>  
+      <mirrorOf>central</mirrorOf> 
+    </mirror> 
+  </mirrors>  
+  <pluginGroups> 
+    <pluginGroup>org.mortbay.jetty</pluginGroup> 
+  </pluginGroups>  
+  <!-- 设定除中央仓库(repo1.maven.org/maven2/)外的其他仓库,按设定顺序进行查找. -->  
+  <profiles> 
+    <profile> 
+      <!-- 如有Nexus私服, 取消注释并指向正确的服务器地址.-->  
+      <id>nexus</id>  
+      <repositories> 
+        <repository> 
+          <id>nexus</id>  
+          <name>Walton Repository</name>  
+          <url>http://192.168.0.109:8081/nexus/content/groups/public</url>  
+          <layout>default</layout>  
+          <releases> 
+            <enabled>true</enabled> 
+          </releases>  
+          <snapshots> 
+            <enabled>true</enabled>  
+            <updatePolicy>always</updatePolicy> 
+          </snapshots> 
+        </repository> 
+      </repositories>  
+      <pluginRepositories> 
+        <pluginRepository> 
+          <id>nexus</id>  
+          <name>Walton Plugin Repository</name>  
+          <url>http://192.168.0.109/nexus/content/groups/public</url>  
+          <layout>default</layout>  
+          <releases> 
+            <enabled>true</enabled> 
+          </releases>  
+          <snapshots> 
+            <enabled>true</enabled>  
+            <updatePolicy>always</updatePolicy> 
+          </snapshots> 
+        </pluginRepository> 
+      </pluginRepositories> 
+    </profile>  
+    <profile> 
+      <id>aliyun</id>  
+      <repositories> 
+        <repository> 
+          <id>aliyun</id>  
+          <name>aliyun private nexus</name>  
+          <url>http://maven.aliyun.com/nexus/content/groups/public/</url>  
+          <releases> 
+            <enabled>true</enabled> 
+          </releases>  
+          <snapshots> 
+            <enabled>false</enabled> 
+          </snapshots> 
+        </repository> 
+      </repositories>  
+      <pluginRepositories> 
+        <pluginRepository> 
+          <id>aliyun</id>  
+          <name>aliyun private nexus</name>  
+          <url>http://maven.aliyun.com/nexus/content/groups/public/</url>  
+          <releases> 
+            <enabled>true</enabled> 
+          </releases>  
+          <snapshots> 
+            <enabled>false</enabled> 
+          </snapshots> 
+        </pluginRepository> 
+      </pluginRepositories> 
+    </profile> 
+  </profiles>  
+  <activeProfiles> 
+    <activeProfile>nexus</activeProfile> 
+  </activeProfiles> 
+</settings>

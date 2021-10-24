@@ -3,6 +3,7 @@ package com.mq.consumer.kafka.util;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import java.lang.reflect.Field;
+import java.util.Optional;
 
 /**
  * @version v1.0
@@ -22,7 +23,12 @@ public class KafkaConsumerUtil {
             Field groupIdField = consumer.getClass().getDeclaredField("groupId");
             if (groupIdField != null) {
                 groupIdField.setAccessible(true);
-                groupId = (String) groupIdField.get(consumer);
+                Object groupIdObj = groupIdField.get(consumer);
+                if (groupIdObj instanceof Optional) {
+                    groupId = ((Optional<String>) groupIdObj).orElse(null);
+                } else if (groupId instanceof String) {
+                    groupId = (String) groupIdObj;
+                }
             }
         } catch (Exception e) {
             log.error(" consumer getGroupIdField error cause by: ", e);

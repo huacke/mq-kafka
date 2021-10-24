@@ -5,12 +5,11 @@ import com.mq.biz.bean.KafkaProcessMsgLog;
 import com.mq.biz.bean.KafkaRequestLog;
 import com.mq.biz.impl.KafkaRequestLogService;
 import com.mq.biz.impl.KafkaProcessMsgLogService;
+import com.mq.common.utils.StringUtils;
 import com.mq.kafka.util.MsgHandleUtil;
 import com.mq.msg.enums.MsgStatus;
-import com.mq.msg.enums.SystemID;
 import com.mq.msg.kafka.KafkaMessage;
 import com.mq.scheduler.KakaMQRequestTaskExecutor;
-import com.mq.common.response.ResultHandleT;
 import com.mq.common.exception.BussinessException;
 import com.mq.common.exception.code.ErrorCode;
 import com.mq.thread.task.RunTask;
@@ -28,6 +27,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Component;
 import java.util.*;
+
 
 @Aspect
 @Component
@@ -54,7 +54,7 @@ public class KafkaMQClientIntercepter {
             return new KafkaRequestLog();
         }
     };
-    @Pointcut("@within(org.springframework.cloud.openfeign.FeignClient)&&execution(* com.mq.mq.biz.client.api.KafkaMQClientService*.*(..))")
+    @Pointcut("@within(org.springframework.cloud.openfeign.FeignClient)&&execution(* com.mq.biz.client.api.KafkaMQClientService*.*(..))||execution(* com.mq.kafka.*.KafkaMQService.compensateSendMQ(..))")
     public void pointLog() {
     }
     @Around("pointLog()")
@@ -74,25 +74,12 @@ public class KafkaMQClientIntercepter {
             requestLog = processrequestLogBaseInfo(pjp);
             kafkaMessage = (KafkaMessage) Arrays.stream(args).filter(it -> it instanceof KafkaMessage).findFirst().orElseGet(null);
             fillKafkaRequestLog(requestLog, kafkaMessage);
-            kafkaProcessMsgLog = queryKafkaProcessMsgLog(requestLog);
-            String sourceSystem = requestLog.getSourceSystem();
-            boolean excuteFlag = true;
-            if (null == kafkaProcessMsgLog) {
-                kafkaProcessMsgLog = makeKafkaProcessMsgLog(kafkaMessage);
-                saveKafkaProcessMsgFlag= saveKafKaMQProcessMessageLog(kafkaProcessMsgLog);
-            } else if (!SystemID.MQ_SERVICE.name().equals(sourceSystem)) {
-                result = ResultHandleT.error(ErrorCode.MQ_SEND_DUPLICATE_ERROR);
-                excuteFlag = false;
-            }else{
-                if(MsgStatus.NORMAL.equals(kafkaProcessMsgLog.equals(kafkaProcessMsgLog.getStatus()))){
-                    result = ResultHandleT.error(ErrorCode.MQ_SEND_IGNORE_ERROR);
-                    excuteFlag =false;
-                }
-            }
-            if (excuteFlag) {
-                //执行方法
-                result = pjp.proceed();
-            }
+
+            kafkaProcessMsgLog = buildKafkaProcessMsgLog(kafkaMessage);
+            saveKafkaProcessMsgFlag= saveKafKaMQProcessMessageLog(kafkaProcessMsgLog);
+
+            //执行方法
+            result = pjp.proceed();
             //返回结果处理
             processResult(result, pjp);
             handMessageStatus(result, null, requestLog);
@@ -104,46 +91,38 @@ public class KafkaMQClientIntercepter {
         } finally {
             //返回时间
             end = new Date();
-            requestLog.setResponseTime(end);
             long costTime = end.getTime() - begin.getTime();
-            requestLog.setCostTime(Integer.valueOf(costTime + ""));
+            requestLog.setCostTime(new Long(costTime).intValue());
 
             saveKafkaRequestLog(requestLog);
 
-            if (!MsgStatus.READY.getCode().equals(requestLog.getStatus())) {
-                if (kafkaProcessMsgLog != null) {
-                    String id = kafkaProcessMsgLog.getId();
-                    if (StringUtil.isNotEmpty(id)) {
-                        Query query = new Query();
-                        query.addCriteria(Criteria.where("id").is(id));
-                        query.addCriteria(Criteria.where("status").ne(MsgStatus.NORMAL.getCode()));
-                        Update update = new Update();
-                        update.set("status", requestLog.getStatus());
-                        kafkaProcessMsgLogService.update(query, update);
+            try{
+                if (!MsgStatus.READY.getCode().equals(requestLog.getStatus())) {
+                    if (kafkaProcessMsgLog != null) {
+                        String id = kafkaProcessMsgLog.getId();
+                        if (StringUtils.isNotEmpty(id)) {
+                            Query query = new Query();
+                            query.addCriteria(Criteria.where("id").is(id));
+                            query.addCriteria(Criteria.where("status").ne(MsgStatus.NORMAL.getCode()));
+                            Update update = new Update();
+                            update.set("status", requestLog.getStatus());
+                            kafkaProcessMsgLogService.update(query, update);
+                        }
+                    }
+                    if (!saveKafkaProcessMsgFlag) {
+                        if (null == kafkaProcessMsgLog) {
+                            kafkaProcessMsgLog = buildKafkaProcessMsgLog(kafkaMessage);
+                        }
+                        kafkaProcessMsgLog.setStatus(requestLog.getStatus());
+                        saveKafKaMQProcessMessageLog(kafkaProcessMsgLog);
                     }
                 }
-                if (!saveKafkaProcessMsgFlag) {
-                    if (null == kafkaProcessMsgLog) {
-                        kafkaProcessMsgLog = makeKafkaProcessMsgLog(kafkaMessage);
-                    }
-                    kafkaProcessMsgLog.setStatus(requestLog.getStatus());
-                    saveKafKaMQProcessMessageLog(kafkaProcessMsgLog);
-                }
+            }catch (Exception e){
+                log.error("handle unNormal msg error cause by: ",e);
             }
             //释放资源
             requestLogThreadLocal.remove();
         }
-    }
-
-    private KafkaProcessMsgLog queryKafkaProcessMsgLog(KafkaRequestLog kafkaMQRequestLog) {
-        String digest = kafkaMQRequestLog.getDigest();
-        KafkaProcessMsgLog kafkaMQProcessMessageLog = null;
-        try {
-            kafkaMQProcessMessageLog = kafkaProcessMsgLogService.findById(digest);
-        } catch (Exception e) {
-            log.error("queryKafkaProcessMsgLog error cause by :", e);
-        }
-        return kafkaMQProcessMessageLog;
     }
 
     private void fillKafkaRequestLog(KafkaRequestLog kafkaRequestLog, KafkaMessage message) {
@@ -161,11 +140,10 @@ public class KafkaMQClientIntercepter {
         kafkaRequestLog.setMsgKey(message.getMessageBody().getMsgKey());
         kafkaRequestLog.setMsgType(message.getMsgType());
         kafkaRequestLog.setMsgSubType(message.getMsgSubType());
-        kafkaRequestLog.setCreateId("0");
         kafkaRequestLog.setCreatetime(new Date());
     }
 
-    private KafkaProcessMsgLog makeKafkaProcessMsgLog(KafkaMessage kafkaMessage) {
+    private KafkaProcessMsgLog buildKafkaProcessMsgLog(KafkaMessage kafkaMessage) {
         return kafkaProcessMsgLogService.makeLogFromMessage(kafkaMessage);
     }
 
@@ -218,7 +196,7 @@ public class KafkaMQClientIntercepter {
     KafkaRequestLog processrequestLogBaseInfo(ProceedingJoinPoint pjp) throws Exception {
         KafkaRequestLog requestLog = requestLogThreadLocal.get();
         try {
-            String ip = LocalInfo.getIp();
+            String ip = LocalInfo.ip;
             String method = pjp.getSignature().getName();
             processAttributeInfo(pjp);
             requestLog.setNode(ip);

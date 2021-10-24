@@ -1,0 +1,56 @@
+package ${mapperPackageName};
+
+import com.mq.data.base.BaseMapper;
+import ${entityPackageName}.${entityClassName};
+import ${examplePackageName}.${exampleClassName};
+import java.util.List;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+/**
+ * ${tableComment} (${mapperClassName})
+ * @author：   ${author}
+ */
+ @Mapper
+public interface ${mapperClassName} extends BaseMapper<${entityClassName}>{
+
+    /**
+     * 根据条件删除
+     * @param example
+     * @return
+     */
+    int deleteByExample(@Param("example") ${exampleClassName} example);
+
+    /**
+     * 根据条件更新
+     * @param record
+     * @return
+     */
+    int updateByExample(@Param("record") ${entityClassName} record, @Param("example") ${exampleClassName} example);
+    /**
+     * 根据条件更新(非空)
+     * @param record
+     * @return
+     */
+    int updateByExampleSelective(@Param("record") ${entityClassName} record, @Param("example") ${exampleClassName} example);
+
+    /**
+     * 通过条件查询
+     * @param example
+     * @return
+     */
+    List<${entityClassName}> selectByExample(${exampleClassName} example);
+    /**
+     * 通过条件查询条数
+     * @param example
+     * @return
+     */
+    int countByExample(${exampleClassName} example);
+
+    /**
+     * 通过条件查询返回一条数据
+     * @param example
+     * @return
+     */
+    ${entityClassName} selectOneByExample(${exampleClassName} example);
+}

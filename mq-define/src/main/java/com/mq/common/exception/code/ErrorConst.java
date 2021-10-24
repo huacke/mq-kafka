@@ -1,0 +1,54 @@
+package com.mq.common.exception.code;
+/**
+ * 结果编码规范
+ */
+public interface ErrorConst {
+	/**系统异常*/
+	String SYSTEM_ERROR_CODE="E00000";
+	/**请求相关 start */
+	String	REQ_METHOD_TYPE_ERROR_CODE="E00100";
+	String	REQ_SESSION_TIMEOUT_ERROR_CODE="E00101";
+	String	REQ_SERVER_ERROR_CODE="E00102";
+	String	REQ_SERVER_BUSY_ERROR_CODE="E00103";
+	String  REQ_VALIDATE_ERROR_CODE ="E00104";
+	/**请求参数相关*/
+	String  REQ_PARA_NORULE_ERROR_CODE="E00200";
+	String	REQ_PARA_TYPE_NOMATCH_ERROR_CODE="E00201";
+	String	REQ_PARA_INCOMPLETE_ERROR_CODE="E00202";
+	String	REQ_PARA_HEADER_ERROR_CODE="E00203";
+	String	REQ_PARA_EMPTY_ERROR_CODE="E00204";
+	String	REQ_PARA_INVALID_ERROR_CODE="E00205";
+	/**数据异常*/
+	String	DATA_EMPTY_ERROR_CODE="E00700";
+	String	DATA_DUPLICATE_ERROR_CODE="E00701";
+	String	DATA_OPER_ERROR_CODE="E00702";
+	String	DATA_NOT_EXIST_ERROR_CODE="E00703";
+	String	DATA_INIT_ERROR_CODE="E00704";
+	String	DATA_INIT_FORM_ERROR_CODE="E00705";
+	String  DATA_DELETE_LINKED_ERROR_CODE="E00706";
+
+	/**数据库操作异常*/
+	String DB_CREATE_ERROR_CODE ="E00400";
+	String DB_DELETE_ERROR_CODE ="E00401";
+	String DB_UPDATE_ERROR_CODE ="E00402";
+	String DB_QUERY_ERROR_CODE ="E00403";
+	String DB_RESOURCE_NULL_ERROR_CODE="E00404";
+
+	/**消息队列相关*/
+	String  MQ_PARAM_ERROR_CODE = "E80000";
+	String MQ_SEND_ERROR_CODE="E80001";
+	String MQ_SEND_DUPLICATE_ERROR_CODE="E80002";
+	String MQ_SEND_IGNORE_ERROR_CODE="E80003";
+
+	/**
+	 * 获取code码
+	 * @return
+	 */
+	String getCode();
+
+	/**
+	 * 获取消息
+	 * @return
+	 */
+	String getMessage();
+}

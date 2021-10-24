@@ -1,0 +1,9 @@
+kafka-topics.sh --bootstrap-server 192.168.0.109:9092,192.168.0.111:9092,192.168.0.100:9092 --topic TEST --replication-factor 3 --partitions 3 --create --command-config  /usr/local/kafka/config/topic.properties
+
+kafka-console-consumer.sh --bootstrap-server 192.168.0.109:9092,192.168.0.111:9092,192.168.0.100:9092 --topic TEST --from-beginning --consumer.config  /usr/local/kafka/config/consumer.properties 
+
+kafka-console-producer.sh   --broker-list 192.168.0.109:9092,192.168.0.111:9092,192.168.0.100:9092 --topic TEST   --producer.config  /usr/local/kafka/config/producer.properties
+
+
+
+

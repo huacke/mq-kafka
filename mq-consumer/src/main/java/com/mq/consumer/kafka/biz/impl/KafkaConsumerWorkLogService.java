@@ -1,11 +1,15 @@
 package com.mq.consumer.kafka.biz.impl;
 
+import com.mq.common.exception.BussinessException;
+import com.mq.common.response.ResultHandleT;
 import com.mq.mongo.dao.BaseMongoDao;
 import com.mq.mongo.service.impl.BaseMongoService;
 import com.mq.consumer.kafka.biz.bean.KafkaConsumerWorkLog;
 import com.mq.consumer.kafka.dao.KafkaConsumerMsgLogDao;
 import com.mq.msg.kafka.KafkaMessage;
+import com.mq.utils.ExceptionFormatUtil;
 import com.mq.utils.GsonHelper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
@@ -18,13 +22,10 @@ import java.util.Date;
  */
 @Service
 @Primary
-public class KafkaConsumerWorkLogService extends BaseMongoService<KafkaConsumerWorkLog,String>{
+@Slf4j
+public class KafkaConsumerWorkLogService extends BaseMongoService<KafkaConsumerWorkLog,KafkaConsumerMsgLogDao,String>{
     @Autowired
     private KafkaConsumerMsgLogDao kafkaConsumerMsgLogDao;
-    @Override
-    protected BaseMongoDao populateDao() {
-        return kafkaConsumerMsgLogDao;
-    }
     /**
      * @Description 保存日志
      * @param  kafkaConsumerWorkLog
@@ -69,10 +70,39 @@ public class KafkaConsumerWorkLogService extends BaseMongoService<KafkaConsumerW
         kafkaConsumerWorkLog.setGroupId(groupId);
         kafkaConsumerWorkLog.setPartition(partition);
         kafkaConsumerWorkLog.setOffset(offset);
-        kafkaConsumerWorkLog.setSourceSystem(kafkaMessage.getHeader().getSourceSystem());
-        kafkaConsumerWorkLog.setState("1");
         kafkaConsumerWorkLog.setCreatetime(new Date());
         return kafkaConsumerWorkLog;
+    }
+
+
+    public void saveKafkaConsumerWorkLog(ResultHandleT handleResult, KafkaMessage message, String topic, int partition, String groupId, long offset, Date begin, Date end) {
+
+        try {
+            KafkaConsumerWorkLog kafkaConsumerWorkLog = buildKafkaConsumerWorkLog(message, topic, partition, groupId, offset);
+            kafkaConsumerWorkLog.setRequestTime(begin);
+            if (begin != null && end != null) {
+                long costTime = end.getTime() - begin.getTime();
+                kafkaConsumerWorkLog.setCostTime((int) costTime);
+            }
+            if (handleResult != null) {
+                Throwable error = handleResult.getE();
+                if (error != null) {
+                    if (error instanceof BussinessException) {
+                        BussinessException err = (BussinessException) error;
+                        kafkaConsumerWorkLog.setCode(err.getCode());
+                    } else {
+                        kafkaConsumerWorkLog.setCode("1");
+                    }
+                    kafkaConsumerWorkLog.setResult(ExceptionFormatUtil.getTrace(error, 5));
+                } else {
+                    kafkaConsumerWorkLog.setCode("0");
+                    kafkaConsumerWorkLog.setResult(GsonHelper.toJson(handleResult.getData()));
+                }
+            }
+            saveLog(kafkaConsumerWorkLog);
+        } catch (Exception e) {
+            log.error("saveKafkaConsumerWorkLog error cause by: ", e);
+        }
     }
 
 }

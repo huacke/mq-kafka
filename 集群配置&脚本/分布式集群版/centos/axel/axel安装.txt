@@ -1,4 +1,0 @@
-yum install -y axel
-
-mv axelget.conf /etc/yum/pluginconf.d/
-mv axelget.py  /usr/lib/yum-plugins/
