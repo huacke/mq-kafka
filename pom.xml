@@ -82,7 +82,7 @@
 
 		<lettuce.version>5.2.1.RELEASE</lettuce.version>
 
-		<kafka-client.version>2.5.1</kafka-client.version>
+		<kafka-client.version>2.6.3</kafka-client.version>
 
 		<mq-define-version>1.0.0.0</mq-define-version>
 		<mq-framework-version>1.0.0.0</mq-framework-version>
